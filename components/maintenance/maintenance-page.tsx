@@ -1,0 +1,260 @@
+"use client"
+
+import { useState } from "react"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { MaintenanceForm } from "./maintenance-form"
+import { Plus, Search } from "lucide-react"
+import Link from "next/link"
+
+export function MaintenancePage() {
+  const [showForm, setShowForm] = useState(false)
+  const [filterStatus, setFilterStatus] = useState<"all" | "open" | "in-progress" | "completed" | "cancelled">("all")
+  const [filterPriority, setFilterPriority] = useState<"all" | "low" | "medium" | "high" | "urgent">("all")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Mock data - will be replaced with real data from API
+  const requests = [
+    {
+      id: "1",
+      tenantId: "1",
+      tenantName: "John Smith",
+      unitNumber: "101",
+      title: "Leaky faucet in kitchen",
+      description: "Kitchen sink faucet is dripping constantly",
+      category: "Plumbing",
+      priority: "medium" as const,
+      status: "open" as const,
+      estimatedCost: 150,
+      actualCost: null,
+      assignedVendor: null,
+      createdAt: "2025-10-25",
+    },
+    {
+      id: "2",
+      tenantId: "2",
+      tenantName: "Sarah Johnson",
+      unitNumber: "202",
+      title: "HVAC not cooling",
+      description: "Air conditioning unit is not cooling the apartment",
+      category: "HVAC",
+      priority: "urgent" as const,
+      status: "in-progress" as const,
+      estimatedCost: 500,
+      actualCost: null,
+      assignedVendor: "Cool Air Services",
+      createdAt: "2025-10-23",
+    },
+    {
+      id: "3",
+      tenantId: "3",
+      tenantName: "Mike Davis",
+      unitNumber: "303",
+      title: "Door lock replacement",
+      description: "Front door lock is broken and needs replacement",
+      category: "Security",
+      priority: "high" as const,
+      status: "open" as const,
+      estimatedCost: 200,
+      actualCost: null,
+      assignedVendor: null,
+      createdAt: "2025-10-24",
+    },
+    {
+      id: "4",
+      tenantId: "1",
+      tenantName: "John Smith",
+      unitNumber: "101",
+      title: "Paint touch-up",
+      description: "Wall paint needs touch-up in living room",
+      category: "Painting",
+      priority: "low" as const,
+      status: "completed" as const,
+      estimatedCost: 100,
+      actualCost: 100,
+      assignedVendor: "Paint Pro",
+      createdAt: "2025-10-20",
+    },
+  ]
+
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus = filterStatus === "all" || request.status === filterStatus
+    const matchesPriority = filterPriority === "all" || request.priority === filterPriority
+    const matchesSearch =
+      request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.unitNumber.includes(searchTerm)
+    return matchesStatus && matchesPriority && matchesSearch
+  })
+
+  const stats = {
+    open: requests.filter((r) => r.status === "open").length,
+    inProgress: requests.filter((r) => r.status === "in-progress").length,
+    completed: requests.filter((r) => r.status === "completed").length,
+    urgent: requests.filter((r) => r.priority === "urgent").length,
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-text">Maintenance Requests</h1>
+          <p className="text-text-secondary mt-1">Track and manage maintenance issues</p>
+        </div>
+        <Button onClick={() => setShowForm(true)} className="gap-2">
+          <Plus size={20} />
+          New Request
+        </Button>
+      </div>
+
+      {showForm && <MaintenanceForm onClose={() => setShowForm(false)} />}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-6">
+          <p className="text-text-secondary text-sm font-medium">Open</p>
+          <p className="text-3xl font-bold text-text mt-2">{stats.open}</p>
+        </Card>
+
+        <Card className="p-6">
+          <p className="text-text-secondary text-sm font-medium">In Progress</p>
+          <p className="text-3xl font-bold text-text mt-2">{stats.inProgress}</p>
+        </Card>
+
+        <Card className="p-6">
+          <p className="text-text-secondary text-sm font-medium">Completed</p>
+          <p className="text-3xl font-bold text-text mt-2">{stats.completed}</p>
+        </Card>
+
+        <Card className="p-6">
+          <p className="text-text-secondary text-sm font-medium">Urgent</p>
+          <p className="text-3xl font-bold text-red-600 mt-2">{stats.urgent}</p>
+        </Card>
+      </div>
+
+      {/* Filters and Search */}
+      <Card className="p-6">
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-3 text-text-secondary" size={20} />
+            <Input
+              placeholder="Search by title, tenant, or unit..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div>
+            <p className="text-sm font-medium text-text-secondary mb-2">Status</p>
+            <div className="flex gap-2 flex-wrap">
+              {(["all", "open", "in-progress", "completed", "cancelled"] as const).map((status) => (
+                <Button
+                  key={status}
+                  variant={filterStatus === status ? "default" : "outline"}
+                  onClick={() => setFilterStatus(status)}
+                  size="sm"
+                >
+                  {status === "all" ? "All" : status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-text-secondary mb-2">Priority</p>
+            <div className="flex gap-2 flex-wrap">
+              {(["all", "low", "medium", "high", "urgent"] as const).map((priority) => (
+                <Button
+                  key={priority}
+                  variant={filterPriority === priority ? "default" : "outline"}
+                  onClick={() => setFilterPriority(priority)}
+                  size="sm"
+                >
+                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Requests Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Title</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Tenant</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Category</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Priority</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Status</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Est. Cost</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Vendor</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRequests.map((request) => (
+                <tr key={request.id} className="border-b border-border hover:bg-surface">
+                  <td className="py-3 px-4 font-medium text-text">{request.title}</td>
+                  <td className="py-3 px-4 text-text-secondary">
+                    {request.tenantName} (Unit {request.unitNumber})
+                  </td>
+                  <td className="py-3 px-4 text-text">{request.category}</td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        request.priority === "urgent"
+                          ? "bg-red-100 text-red-700"
+                          : request.priority === "high"
+                            ? "bg-orange-100 text-orange-700"
+                            : request.priority === "medium"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        request.status === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : request.status === "in-progress"
+                            ? "bg-blue-100 text-blue-700"
+                            : request.status === "cancelled"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {request.status.charAt(0).toUpperCase() + request.status.slice(1).replace("-", " ")}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-text">${request.estimatedCost}</td>
+                  <td className="py-3 px-4 text-text-secondary">{request.assignedVendor || "-"}</td>
+                  <td className="py-3 px-4">
+                    <Link href={`/maintenance/${request.id}`}>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredRequests.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-text-secondary">No maintenance requests found</p>
+          </div>
+        )}
+      </Card>
+    </div>
+  )
+}
