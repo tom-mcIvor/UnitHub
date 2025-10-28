@@ -5,56 +5,22 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TenantForm } from "./tenant-form"
-import { Plus, Search, Edit2, Trash2, Eye } from "lucide-react"
+import { Plus, Search, Edit2, Trash2, Eye, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import type { Tenant } from "@/lib/types"
 
-export function TenantsList() {
+interface TenantsListProps {
+  initialTenants: Tenant[]
+  error: string | null
+}
+
+export function TenantsList({ initialTenants, error }: TenantsListProps) {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterUnit, setFilterUnit] = useState("")
 
-  // Mock data - will be replaced with real data from API
-  const tenants = [
-    {
-      id: "1",
-      name: "John Smith",
-      email: "john@example.com",
-      phone: "555-0101",
-      unitNumber: "101",
-      leaseStartDate: "2023-01-15",
-      leaseEndDate: "2025-01-14",
-      rentAmount: 1200,
-      depositAmount: 1200,
-      petPolicy: "No pets",
-      notes: "Excellent tenant",
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      phone: "555-0102",
-      unitNumber: "202",
-      leaseStartDate: "2023-06-01",
-      leaseEndDate: "2025-05-31",
-      rentAmount: 1200,
-      depositAmount: 1200,
-      petPolicy: "One cat allowed",
-      notes: "Pays on time",
-    },
-    {
-      id: "3",
-      name: "Mike Davis",
-      email: "mike@example.com",
-      phone: "555-0103",
-      unitNumber: "303",
-      leaseStartDate: "2024-03-01",
-      leaseEndDate: "2026-02-28",
-      rentAmount: 1500,
-      depositAmount: 1500,
-      petPolicy: "No pets",
-      notes: "New tenant",
-    },
-  ]
+  // Use real data from database
+  const tenants = initialTenants
 
   const filteredTenants = tenants.filter((tenant) => {
     const matchesSearch =
@@ -76,6 +42,15 @@ export function TenantsList() {
           Add Tenant
         </Button>
       </div>
+
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <div className="flex items-center gap-2 text-red-700">
+            <AlertCircle size={20} />
+            <p className="font-medium">Error loading tenants: {error}</p>
+          </div>
+        </Card>
+      )}
 
       {showForm && <TenantForm onClose={() => setShowForm(false)} />}
 

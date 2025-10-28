@@ -7,7 +7,9 @@ import { tenantSchema, type TenantFormData } from "@/lib/schemas"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X } from "lucide-react"
+import { X, CheckCircle, AlertCircle } from "lucide-react"
+import { createTenant } from "@/app/actions/tenants"
+import { useRouter } from "next/navigation"
 
 interface TenantFormProps {
   onClose: () => void
@@ -16,6 +18,9 @@ interface TenantFormProps {
 
 export function TenantForm({ onClose, initialData }: TenantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const router = useRouter()
 
   const {
     register,
@@ -28,10 +33,30 @@ export function TenantForm({ onClose, initialData }: TenantFormProps) {
 
   const onSubmit = async (data: TenantFormData) => {
     setIsSubmitting(true)
+    setError(null)
+
     try {
-      // TODO: Call API to save tenant
-      console.log("Saving tenant:", data)
-      onClose()
+      // Convert form data to FormData for server action
+      const formData = new FormData()
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value?.toString() || '')
+      })
+
+      const result = await createTenant(formData)
+
+      if (result.success) {
+        setSuccess(true)
+        // Wait a moment to show success message
+        setTimeout(() => {
+          router.refresh() // Refresh the page data
+          onClose()
+        }, 1000)
+      } else {
+        setError(result.error || 'Failed to create tenant')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+      console.error('Error submitting form:', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -113,12 +138,26 @@ export function TenantForm({ onClose, initialData }: TenantFormProps) {
             />
           </div>
 
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
+              <CheckCircle size={20} />
+              <p className="text-sm">Tenant created successfully!</p>
+            </div>
+          )}
+
           <div className="flex gap-3 justify-end pt-4">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Tenant"}
+            <Button type="submit" disabled={isSubmitting || success}>
+              {isSubmitting ? "Saving..." : success ? "Saved!" : "Save Tenant"}
             </Button>
           </div>
         </form>
