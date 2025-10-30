@@ -6,9 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RentPaymentForm } from "./rent-payment-form"
 import { RentChart } from "./rent-chart"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Edit2, Trash2 } from "lucide-react"
 import type { RentPaymentWithTenant } from "@/app/actions/rent"
 import type { Tenant } from "@/lib/types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { deleteRentPayment } from "@/app/actions/rent"
+import { useRouter } from "next/navigation"
 
 interface RentTrackingPageProps {
   initialPayments: RentPaymentWithTenant[]
@@ -18,10 +30,43 @@ interface RentTrackingPageProps {
 
 export function RentTrackingPage({ initialPayments, tenants, error }: RentTrackingPageProps) {
   const [showForm, setShowForm] = useState(false)
+  const [editingPayment, setEditingPayment] = useState<RentPaymentWithTenant | null>(null)
+  const [deletingPayment, setDeletingPayment] = useState<RentPaymentWithTenant | null>(null)
   const [filterStatus, setFilterStatus] = useState<"all" | "paid" | "pending" | "overdue">("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   const payments = initialPayments
+
+  const handleEdit = (payment: RentPaymentWithTenant) => {
+    setEditingPayment(payment)
+    setShowForm(true)
+  }
+
+  const handleDelete = async () => {
+    if (!deletingPayment) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteRentPayment(deletingPayment.id)
+      if (result.success) {
+        router.refresh()
+        setDeletingPayment(null)
+      } else {
+        alert(`Failed to delete payment: ${result.error}`)
+      }
+    } catch (error) {
+      alert('An unexpected error occurred')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleCloseForm = () => {
+    setShowForm(false)
+    setEditingPayment(null)
+  }
 
   const filteredPayments = payments.filter((payment) => {
     const matchesStatus = filterStatus === "all" || payment.status === filterStatus
@@ -58,7 +103,21 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
         </Card>
       )}
 
-      {showForm && <RentPaymentForm onClose={() => setShowForm(false)} tenants={tenants} />}
+      {showForm && (
+        <RentPaymentForm
+          onClose={handleCloseForm}
+          tenants={tenants}
+          editingPayment={editingPayment || undefined}
+          initialData={editingPayment ? {
+            tenantId: editingPayment.tenantId,
+            amount: editingPayment.amount,
+            dueDate: editingPayment.dueDate,
+            paidDate: editingPayment.paidDate || '',
+            status: editingPayment.status,
+            notes: editingPayment.notes || '',
+          } : undefined}
+        />
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -141,6 +200,7 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
                 <th className="text-left py-3 px-4 font-medium text-text-secondary">Paid Date</th>
                 <th className="text-left py-3 px-4 font-medium text-text-secondary">Status</th>
                 <th className="text-left py-3 px-4 font-medium text-text-secondary">Notes</th>
+                <th className="text-left py-3 px-4 font-medium text-text-secondary">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -165,6 +225,26 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
                     </span>
                   </td>
                   <td className="py-3 px-4 text-text-secondary text-xs">{payment.notes}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => handleEdit(payment)}
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingPayment(payment)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -177,6 +257,27 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
           </div>
         )}
       </Card>
+
+      <AlertDialog open={!!deletingPayment} onOpenChange={() => setDeletingPayment(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Payment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this payment of <strong>${deletingPayment?.amount}</strong> for <strong>{deletingPayment?.tenantName}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

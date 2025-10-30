@@ -44,9 +44,37 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 
 ### Test Files Created (6 files)
 
+## Test File Structure
+
+Following the pattern from Yeah-book project, tests are **co-located** with the code they test in `__tests__/` directories:
+
+```
+app/actions/
+├── __tests__/
+│   ├── tenants.test.ts
+│   └── rent.test.ts
+├── tenants.ts
+├── rent.ts
+└── ...
+
+components/tenants/
+├── __tests__/
+│   ├── tenant-form.test.tsx
+│   └── tenants-list.test.tsx
+├── tenant-form.tsx
+└── tenants-list.tsx
+
+components/rent/
+├── __tests__/
+│   ├── rent-payment-form.test.tsx
+│   └── rent-tracking-page.test.tsx
+├── rent-payment-form.tsx
+└── rent-tracking-page.tsx
+```
+
 #### Server Action Tests (Both Passing)
 
-**`__tests__/actions/tenants.test.ts`** (156 lines)
+**`app/actions/__tests__/tenants.test.ts`** (156 lines)
 - Tests: 6 total, 6 passing
 - Coverage:
   - `getTenants()` - Fetches all tenants, verifies array return
@@ -57,7 +85,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
   - `deleteTenant(id)` - Delete by UUID
 - Mocks: Supabase client, next/cache revalidatePath
 
-**`__tests__/actions/rent.test.ts`** (133 lines)
+**`app/actions/__tests__/rent.test.ts`** (133 lines)
 - Tests: 5 total, 5 passing
 - Coverage:
   - `getRentPayments()` - Fetches with JOIN to tenants
@@ -69,7 +97,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 
 #### Component Tests (All Failing - Environment Issues)
 
-**`__tests__/components/tenant-form.test.tsx`** (58 lines)
+**`components/tenants/__tests__/tenant-form.test.tsx`** (58 lines)
 - Intended tests: 4
   - Renders all form fields
   - Shows validation errors
@@ -78,7 +106,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 - Status: Fails with `ReferenceError: Request is not defined`
 - Mocks: next/navigation useRouter, createTenant action
 
-**`__tests__/components/rent-payment-form.test.tsx`** (108 lines)
+**`components/rent/__tests__/rent-payment-form.test.tsx`** (108 lines)
 - Intended tests: 5
   - Renders form with tenant dropdown
   - Populates tenants
@@ -88,7 +116,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 - Status: Fails with `ReferenceError: Request is not defined`
 - Mocks: next/navigation useRouter, createRentPayment action
 
-**`__tests__/components/tenants-list.test.tsx`** (88 lines)
+**`components/tenants/__tests__/tenants-list.test.tsx`** (88 lines)
 - Intended tests: 6
   - Renders tenant list
   - Shows empty state
@@ -98,7 +126,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
   - Opens form modal
 - Status: Fails with `ReferenceError: Request is not defined`
 
-**`__tests__/components/rent-tracking-page.test.tsx`** (121 lines)
+**`components/rent/__tests__/rent-tracking-page.test.tsx`** (121 lines)
 - Intended tests: 7
   - Renders with payments
   - Displays statistics cards
@@ -142,10 +170,10 @@ at Object.<anonymous> (components/rent/rent-payment-form.tsx:21:15)
 ```
 
 **Files Affected**:
-- `__tests__/components/tenant-form.test.tsx`
-- `__tests__/components/rent-payment-form.test.tsx`
-- `__tests__/components/tenants-list.test.tsx`
-- `__tests__/components/rent-tracking-page.test.tsx`
+- `components/tenants/__tests__/tenant-form.test.tsx`
+- `components/rent/__tests__/rent-payment-form.test.tsx`
+- `components/tenants/__tests__/tenants-list.test.tsx`
+- `components/rent/__tests__/rent-tracking-page.test.tsx`
 
 **Suggested Solutions** (Not Tested):
 
@@ -207,7 +235,7 @@ const mockTenants = [{
 - Location: All `__tests__/components/*.test.tsx` mock data definitions
 
 ### 3. Form Label Assertions Fail
-**Location**: `__tests__/components/rent-payment-form.test.tsx:48-55`
+**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:48-55`
 **Issue**: `getByLabelText()` fails because labels don't use `htmlFor` attribute
 
 **Current Code** (components):
@@ -229,7 +257,7 @@ const mockTenants = [{
 - `/app/actions/communications.ts` - No test file created
 
 **Suggested Implementation**:
-- Follow pattern from `__tests__/actions/tenants.test.ts`
+- Follow pattern from `app/actions/__tests__/tenants.test.ts`
 - Mock Supabase client with appropriate table responses
 - Test CRUD operations and validation
 
@@ -242,7 +270,7 @@ const mockTenants = [{
 - Form submission end-to-end flow
 
 **Suggested Solutions**:
-- Create separate `__tests__/integration/` directory
+- Create separate `tests/integration/` directory at project root
 - Use Supabase test project or Docker postgres container
 - Test actual database operations with cleanup
 
@@ -273,18 +301,18 @@ global.TextDecoder = TextDecoder
 **Error**: `Expected null, received undefined`
 **Solution**: Changed to `expect(result.data).toBe(null)` but still failed
 **Final Fix**: Removed assertion entirely - server action returns undefined, not null
-**Location**: `__tests__/actions/tenants.test.ts:119`
+**Location**: `app/actions/__tests__/tenants.test.ts:119`
 
 ### Label Assertions
 **Problem**: `getByLabelText()` failed in component tests
 **Attempted Fix**: Changed to `getByText()` for labels
-**Location**: `__tests__/components/rent-payment-form.test.tsx:51-54`
+**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:51-54`
 **Result**: Partial success, but Request error blocked full test
 
 ### Form Input Selection
 **Problem**: `getByLabelText()` couldn't find inputs
 **Attempted Fix**: Used `getByPlaceholderText()` and `getAllByRole('textbox')`
-**Location**: `__tests__/components/rent-payment-form.test.tsx:90-93`
+**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:90-93`
 **Result**: Works for accessible inputs, but test still blocked by environment
 
 ---
@@ -367,13 +395,12 @@ Time:        1.527s
 ## Files Created
 - `jest.config.js`
 - `jest.setup.js`
-- `__tests__/actions/tenants.test.ts`
-- `__tests__/actions/rent.test.ts`
-- `__tests__/components/tenant-form.test.tsx`
-- `__tests__/components/rent-payment-form.test.tsx`
-- `__tests__/components/tenants-list.test.tsx`
-- `__tests__/components/rent-tracking-page.test.tsx`
-- `__tests__/README.md`
+- `app/actions/__tests__/tenants.test.ts`
+- `app/actions/__tests__/rent.test.ts`
+- `components/tenants/__tests__/tenant-form.test.tsx`
+- `components/tenants/__tests__/tenants-list.test.tsx`
+- `components/rent/__tests__/rent-payment-form.test.tsx`
+- `components/rent/__tests__/rent-tracking-page.test.tsx`
 
 ## Files Modified
 - `package.json` - Added test scripts and devDependencies

@@ -8,6 +8,18 @@ import { TenantForm } from "./tenant-form"
 import { Plus, Search, Edit2, Trash2, Eye, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import type { Tenant } from "@/lib/types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { deleteTenant } from "@/app/actions/tenants"
+import { useRouter } from "next/navigation"
 
 interface TenantsListProps {
   initialTenants: Tenant[]
@@ -16,11 +28,44 @@ interface TenantsListProps {
 
 export function TenantsList({ initialTenants, error }: TenantsListProps) {
   const [showForm, setShowForm] = useState(false)
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null)
+  const [deletingTenant, setDeletingTenant] = useState<Tenant | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterUnit, setFilterUnit] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   // Use real data from database
   const tenants = initialTenants
+
+  const handleEdit = (tenant: Tenant) => {
+    setEditingTenant(tenant)
+    setShowForm(true)
+  }
+
+  const handleDelete = async () => {
+    if (!deletingTenant) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteTenant(deletingTenant.id)
+      if (result.success) {
+        router.refresh()
+        setDeletingTenant(null)
+      } else {
+        alert(`Failed to delete tenant: ${result.error}`)
+      }
+    } catch (error) {
+      alert('An unexpected error occurred')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleCloseForm = () => {
+    setShowForm(false)
+    setEditingTenant(null)
+  }
 
   const filteredTenants = tenants.filter((tenant) => {
     const matchesSearch =
@@ -52,7 +97,24 @@ export function TenantsList({ initialTenants, error }: TenantsListProps) {
         </Card>
       )}
 
-      {showForm && <TenantForm onClose={() => setShowForm(false)} />}
+      {showForm && (
+        <TenantForm
+          onClose={handleCloseForm}
+          editingTenant={editingTenant || undefined}
+          initialData={editingTenant ? {
+            name: editingTenant.name,
+            email: editingTenant.email,
+            phone: editingTenant.phone,
+            unitNumber: editingTenant.unitNumber,
+            leaseStartDate: editingTenant.leaseStartDate,
+            leaseEndDate: editingTenant.leaseEndDate,
+            rentAmount: editingTenant.rentAmount,
+            depositAmount: editingTenant.depositAmount,
+            petPolicy: editingTenant.petPolicy || '',
+            notes: editingTenant.notes || '',
+          } : undefined}
+        />
+      )}
 
       <Card className="p-6">
         <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -103,10 +165,20 @@ export function TenantsList({ initialTenants, error }: TenantsListProps) {
                           View
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="sm" className="gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => handleEdit(tenant)}
+                      >
                         <Edit2 size={16} />
                       </Button>
-                      <Button variant="ghost" size="sm" className="gap-1 text-red-600 hover:text-red-700">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingTenant(tenant)}
+                      >
                         <Trash2 size={16} />
                       </Button>
                     </div>
@@ -123,6 +195,27 @@ export function TenantsList({ initialTenants, error }: TenantsListProps) {
           </div>
         )}
       </Card>
+
+      <AlertDialog open={!!deletingTenant} onOpenChange={() => setDeletingTenant(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Tenant</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deletingTenant?.name}</strong>? This will also delete all associated rent payments, maintenance requests, documents, and communication logs. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

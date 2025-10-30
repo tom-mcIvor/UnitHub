@@ -8,20 +8,24 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
-import { createRentPayment } from "@/app/actions/rent"
+import { createRentPayment, updateRentPayment } from "@/app/actions/rent"
 import { useRouter } from "next/navigation"
 import type { Tenant } from "@/lib/types"
+import type { RentPaymentWithTenant } from "@/app/actions/rent"
 
 interface RentPaymentFormProps {
   onClose: () => void
   tenants?: Tenant[]
+  editingPayment?: RentPaymentWithTenant
+  initialData?: RentPaymentFormData
 }
 
-export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps) {
+export function RentPaymentForm({ onClose, tenants = [], editingPayment, initialData }: RentPaymentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const isEditing = !!editingPayment
 
   const {
     register,
@@ -29,6 +33,7 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
     formState: { errors },
   } = useForm<RentPaymentFormData>({
     resolver: zodResolver(rentPaymentSchema),
+    defaultValues: initialData,
   })
 
   const onSubmit = async (data: RentPaymentFormData) => {
@@ -48,7 +53,9 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
       formData.append('status', data.status)
       formData.append('notes', data.notes || '')
 
-      const result = await createRentPayment(formData)
+      const result = isEditing
+        ? await updateRentPayment(editingPayment.id, formData)
+        : await createRentPayment(formData)
 
       if (result.success) {
         setSuccess(true)
@@ -57,7 +64,7 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
           onClose()
         }, 1000)
       } else {
-        setError(result.error || 'Failed to save payment')
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
       }
     } finally {
       setIsSubmitting(false)
@@ -68,7 +75,7 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <div className="border-b border-border p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-text">Record Payment</h2>
+          <h2 className="text-2xl font-bold text-text">{isEditing ? 'Edit Payment' : 'Record Payment'}</h2>
           <button onClick={onClose} className="p-1 hover:bg-surface rounded">
             <X size={24} />
           </button>
@@ -83,7 +90,7 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
 
           {success && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">Payment recorded successfully!</p>
+              <p className="text-green-700 text-sm">Payment {isEditing ? 'updated' : 'recorded'} successfully!</p>
             </div>
           )}
 
@@ -144,11 +151,11 @@ export function RentPaymentForm({ onClose, tenants = [] }: RentPaymentFormProps)
           </div>
 
           <div className="flex gap-3 justify-end pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Record Payment"}
+            <Button type="submit" disabled={isSubmitting || success}>
+              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Payment" : "Record Payment"}
             </Button>
           </div>
         </form>
