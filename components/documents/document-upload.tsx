@@ -7,12 +7,14 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X, Upload } from "lucide-react"
+import type { Tenant } from "@/lib/types"
 
 interface DocumentUploadProps {
   onClose: () => void
+  tenants?: Tenant[]
 }
 
-export function DocumentUpload({ onClose }: DocumentUploadProps) {
+export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -81,10 +83,12 @@ export function DocumentUpload({ onClose }: DocumentUploadProps) {
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
-              <option value="">Select a tenant</option>
-              <option value="1">John Smith (Unit 101)</option>
-              <option value="2">Sarah Johnson (Unit 202)</option>
-              <option value="3">Mike Davis (Unit 303)</option>
+              <option value="">Property-level document</option>
+              {tenants.map((tenant) => (
+                <option key={tenant.id} value={tenant.id}>
+                  {tenant.name} (Unit {tenant.unitNumber})
+                </option>
+              ))}
             </select>
           </div>
 

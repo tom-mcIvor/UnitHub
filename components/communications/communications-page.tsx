@@ -50,7 +50,8 @@ export function CommunicationsPage({ initialCommunications, tenants, error }: Co
       } else {
         alert(`Failed to delete communication log: ${result.error}`)
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting communication log:', err)
       alert('An unexpected error occurred')
     } finally {
       setIsDeleting(false)

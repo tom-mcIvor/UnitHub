@@ -7,12 +7,12 @@
 
 ## Current Issues
 - `components/communications/communications-page.tsx:53` still accepts an `error` prop from the server component that is never rendered, so lint surfaces an unused-variable warning tied to this file.
-- Documents remain the only module without an edit modal, leaving metadata immutable once saved and breaking parity with the refreshed communications workflow.
+- Documents module still relies on the placeholder upload flow—metadata editing now works, but there is no real file upload or download piping yet.
 - Running ESLint also flags other legacy warnings (for example `app/layout.tsx:7`), which are outside today’s changes but now visible because linting is enabled.
 
 ## Suggestions (Verify First)
 - Either render the `error` message or drop the prop in `components/communications/communications-page.tsx` and the corresponding server component to clear the warning.
-- Add an edit path for documents by cloning the communications pattern: introduce an optional `editingDocument` state in `components/documents/documents-page.tsx` and post updates through `updateDocument` in `app/actions/documents.ts`.
+- Replace the placeholder upload approach with a Supabase-backed storage flow that captures `fileUrl` automatically during create/edit; `components/documents/document-upload.tsx` is the right entry point.
 - Review the newly enabled lint output and address remaining warnings one by one; start with the unused `geistMono` font import in `app/layout.tsx`.
 
 ## What Was Tried

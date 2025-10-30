@@ -1,7 +1,7 @@
 # Edit/Delete UI Implementation
 
 **Date**: 2025-10-31
-**Status**: Partial - 4 of 5 features completed
+**Status**: Complete - all feature areas support edit/delete flows
 
 ---
 
@@ -75,27 +75,24 @@ Modified 2 files to enable full lifecycle management for communication logs:
    - Resets both modal visibility and editing state on close
    - Adds Edit icon to each timeline entry while retaining the existing delete confirmation dialog
 
+### Documents Edit Functionality
+Modified 2 files and added a new form component so document metadata can be updated in place:
+
+1. **`/components/documents/document-form.tsx`** (New)
+   - Reuses the modal pattern from other modules with React Hook Form + Zod validation
+   - Calls `updateDocument(id, formData)` when editing and keeps `createDocument` available for future use
+   - Handles optional tenant association, document type, and file URL with success/error messaging
+
+2. **`/components/documents/documents-page.tsx`** (Modified)
+   - Tracks `editingDocument` state and opens the new form with pre-filled data on Edit
+   - Resets modal + editing state on close and keeps the existing delete confirmation intact
+   - Adds Edit control to the card action row for quick access
+
 ---
 
 ## Problems That Still Exist
 
-### 1. Documents Still Missing Edit UI
-**Location**: `/components/documents/documents-page.tsx`, `/components/documents/document-upload.tsx`
-**Issue**: Users can delete documents but there is no way to update metadata once created.
-
-**Related to new code**: Communications now mirror other modules with full edit/delete support, making documents the lone holdout.
-
-**Suggested solutions**:
-- Introduce an edit modal similar to `CommunicationForm`, pre-filling existing metadata
-- Reuse `DocumentUpload` form logic or extract shared fields into a new component
-- Call `updateDocument()` from `/app/actions/documents.ts:150-202` when saving edits
-
-**Where to look**:
-- `/components/documents/documents-page.tsx:95-155` - Card actions to add Edit button
-- `/components/documents/document-upload.tsx` - Starting point for form fields
-- `/app/actions/documents.ts:150-202` - Server action already supports updates
-
-### 2. Detail Pages Still Use Mock Data
+### 1. Detail Pages Still Use Mock Data
 **Location**: `/app/tenants/[id]/page.tsx`, `/app/maintenance/[id]/page.tsx`
 **Issue**: Despite edit/delete working on list pages, detail pages don't fetch real data.
 

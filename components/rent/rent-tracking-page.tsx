@@ -56,7 +56,8 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
       } else {
         alert(`Failed to delete payment: ${result.error}`)
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting rent payment:', err)
       alert('An unexpected error occurred')
     } finally {
       setIsDeleting(false)

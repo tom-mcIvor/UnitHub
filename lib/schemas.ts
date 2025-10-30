@@ -39,7 +39,15 @@ export const communicationLogSchema = z.object({
   content: z.string().min(1, "Content is required"),
 })
 
+export const documentMetadataSchema = z.object({
+  tenantId: z.union([z.string().min(1, "Tenant is required"), z.literal(""), z.undefined()]).optional(),
+  title: z.string().min(1, "Title is required"),
+  type: z.enum(["lease", "inspection", "photo", "other"]),
+  fileUrl: z.string().min(1, "File URL is required"),
+})
+
 export type TenantFormData = z.infer<typeof tenantSchema>
 export type RentPaymentFormData = z.infer<typeof rentPaymentSchema>
 export type MaintenanceRequestFormData = z.infer<typeof maintenanceRequestSchema>
 export type CommunicationLogFormData = z.infer<typeof communicationLogSchema>
+export type DocumentFormData = z.infer<typeof documentMetadataSchema>

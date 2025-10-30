@@ -55,7 +55,8 @@ export function TenantsList({ initialTenants, error }: TenantsListProps) {
       } else {
         alert(`Failed to delete tenant: ${result.error}`)
       }
-    } catch (error) {
+    } catch (err) {
+      console.error('Error deleting tenant:', err)
       alert('An unexpected error occurred')
     } finally {
       setIsDeleting(false)

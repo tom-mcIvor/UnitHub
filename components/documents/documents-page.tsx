@@ -5,10 +5,23 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DocumentUpload } from "./document-upload"
+import { DocumentForm } from "./document-form"
 import { LeaseExtractor } from "./lease-extractor"
-import { Plus, Search, Download, Trash2, Eye } from "lucide-react"
+import { Plus, Search, Download, Trash2, Eye, Edit2 } from "lucide-react"
 import type { DocumentWithTenant } from "@/app/actions/documents"
 import type { Tenant } from "@/lib/types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { deleteDocument } from "@/app/actions/documents"
+import { useRouter } from "next/navigation"
 
 interface DocumentsPageProps {
   initialDocuments: DocumentWithTenant[]
@@ -19,10 +32,45 @@ interface DocumentsPageProps {
 export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPageProps) {
   const [showUpload, setShowUpload] = useState(false)
   const [showLeaseExtractor, setShowLeaseExtractor] = useState(false)
+  const [showDocumentForm, setShowDocumentForm] = useState(false)
+  const [editingDocument, setEditingDocument] = useState<DocumentWithTenant | null>(null)
+  const [deletingDocument, setDeletingDocument] = useState<DocumentWithTenant | null>(null)
   const [filterType, setFilterType] = useState<"all" | "lease" | "inspection" | "photo" | "other">("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   const documents = initialDocuments
+
+  const handleDelete = async () => {
+    if (!deletingDocument) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteDocument(deletingDocument.id)
+      if (result.success) {
+        router.refresh()
+        setDeletingDocument(null)
+      } else {
+        alert(`Failed to delete document: ${result.error}`)
+      }
+    } catch (err) {
+      console.error('Error deleting document:', err)
+      alert('An unexpected error occurred')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleEdit = (document: DocumentWithTenant) => {
+    setEditingDocument(document)
+    setShowDocumentForm(true)
+  }
+
+  const handleCloseForm = () => {
+    setShowDocumentForm(false)
+    setEditingDocument(null)
+  }
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesType = filterType === "all" || doc.type === filterType
@@ -72,6 +120,19 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
 
       {showUpload && <DocumentUpload onClose={() => setShowUpload(false)} tenants={tenants} />}
       {showLeaseExtractor && <LeaseExtractor onClose={() => setShowLeaseExtractor(false)} />}
+      {showDocumentForm && editingDocument && (
+        <DocumentForm
+          onClose={handleCloseForm}
+          tenants={tenants}
+          editingDocument={editingDocument}
+          initialData={{
+            tenantId: editingDocument.tenantId ?? "",
+            title: editingDocument.title,
+            type: editingDocument.type,
+            fileUrl: editingDocument.fileUrl,
+          }}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -132,10 +193,23 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                   {doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}
                 </span>
                 <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1"
+                    onClick={() => handleEdit(doc)}
+                  >
+                    <Edit2 size={16} />
+                  </Button>
                   <Button variant="ghost" size="sm" className="p-1">
                     <Download size={16} />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1 text-red-600">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 text-red-600 hover:text-red-700"
+                    onClick={() => setDeletingDocument(doc)}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>
@@ -174,6 +248,27 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
           </div>
         )}
       </Card>
+
+      <AlertDialog open={!!deletingDocument} onOpenChange={() => setDeletingDocument(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deletingDocument?.title}</strong>? This will only delete the metadata. The actual file in storage will remain (file upload not yet implemented). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
