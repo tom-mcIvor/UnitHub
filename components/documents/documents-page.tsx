@@ -7,76 +7,28 @@ import { Input } from "@/components/ui/input"
 import { DocumentUpload } from "./document-upload"
 import { LeaseExtractor } from "./lease-extractor"
 import { Plus, Search, Download, Trash2, Eye } from "lucide-react"
+import type { DocumentWithTenant } from "@/app/actions/documents"
+import type { Tenant } from "@/lib/types"
 
-export function DocumentsPage() {
+interface DocumentsPageProps {
+  initialDocuments: DocumentWithTenant[]
+  tenants: Tenant[]
+  error: string | null
+}
+
+export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPageProps) {
   const [showUpload, setShowUpload] = useState(false)
   const [showLeaseExtractor, setShowLeaseExtractor] = useState(false)
   const [filterType, setFilterType] = useState<"all" | "lease" | "inspection" | "photo" | "other">("all")
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Mock data - will be replaced with real data from API
-  const documents = [
-    {
-      id: "1",
-      tenantId: "1",
-      tenantName: "John Smith",
-      title: "Lease Agreement - Unit 101",
-      type: "lease" as const,
-      fileUrl: "/documents/lease-101.pdf",
-      uploadedAt: "2023-01-15",
-      extractedData: {
-        tenantName: "John Smith",
-        leaseStartDate: "2023-01-15",
-        leaseEndDate: "2025-01-14",
-        rentAmount: 1200,
-        depositAmount: 1200,
-        petPolicy: "No pets",
-      },
-    },
-    {
-      id: "2",
-      tenantId: "1",
-      tenantName: "John Smith",
-      title: "Unit 101 - Move-in Inspection",
-      type: "inspection" as const,
-      fileUrl: "/documents/inspection-101.pdf",
-      uploadedAt: "2023-01-16",
-      extractedData: null,
-    },
-    {
-      id: "3",
-      tenantId: "2",
-      tenantName: "Sarah Johnson",
-      title: "Lease Agreement - Unit 202",
-      type: "lease" as const,
-      fileUrl: "/documents/lease-202.pdf",
-      uploadedAt: "2023-06-01",
-      extractedData: {
-        tenantName: "Sarah Johnson",
-        leaseStartDate: "2023-06-01",
-        leaseEndDate: "2025-05-31",
-        rentAmount: 1200,
-        depositAmount: 1200,
-        petPolicy: "One cat allowed",
-      },
-    },
-    {
-      id: "4",
-      tenantId: "1",
-      tenantName: "John Smith",
-      title: "Kitchen Damage Photo",
-      type: "photo" as const,
-      fileUrl: "/documents/photo-kitchen.jpg",
-      uploadedAt: "2025-10-20",
-      extractedData: null,
-    },
-  ]
+  const documents = initialDocuments
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesType = filterType === "all" || doc.type === filterType
     const matchesSearch =
       doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.tenantName.toLowerCase().includes(searchTerm.toLowerCase())
+      (doc.tenantName && doc.tenantName.toLowerCase().includes(searchTerm.toLowerCase()))
     return matchesType && matchesSearch
   })
 
@@ -112,7 +64,13 @@ export function DocumentsPage() {
         </div>
       </div>
 
-      {showUpload && <DocumentUpload onClose={() => setShowUpload(false)} />}
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <p className="text-red-700">Error loading documents: {error}</p>
+        </Card>
+      )}
+
+      {showUpload && <DocumentUpload onClose={() => setShowUpload(false)} tenants={tenants} />}
       {showLeaseExtractor && <LeaseExtractor onClose={() => setShowLeaseExtractor(false)} />}
 
       {/* Stats */}

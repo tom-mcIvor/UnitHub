@@ -7,59 +7,21 @@ import { Input } from "@/components/ui/input"
 import { RentPaymentForm } from "./rent-payment-form"
 import { RentChart } from "./rent-chart"
 import { Plus, Search } from "lucide-react"
+import type { RentPaymentWithTenant } from "@/app/actions/rent"
+import type { Tenant } from "@/lib/types"
 
-export function RentTrackingPage() {
+interface RentTrackingPageProps {
+  initialPayments: RentPaymentWithTenant[]
+  tenants: Tenant[]
+  error: string | null
+}
+
+export function RentTrackingPage({ initialPayments, tenants, error }: RentTrackingPageProps) {
   const [showForm, setShowForm] = useState(false)
   const [filterStatus, setFilterStatus] = useState<"all" | "paid" | "pending" | "overdue">("all")
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Mock data - will be replaced with real data from API
-  const payments = [
-    {
-      id: "1",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      amount: 1200,
-      dueDate: "2025-10-31",
-      paidDate: "2025-10-28",
-      status: "paid" as const,
-      notes: "Paid early",
-    },
-    {
-      id: "2",
-      tenantId: "2",
-      tenantName: "Sarah Johnson",
-      unitNumber: "202",
-      amount: 1200,
-      dueDate: "2025-10-28",
-      paidDate: null,
-      status: "overdue" as const,
-      notes: "Follow up needed",
-    },
-    {
-      id: "3",
-      tenantId: "3",
-      tenantName: "Mike Davis",
-      unitNumber: "303",
-      amount: 1500,
-      dueDate: "2025-11-01",
-      paidDate: null,
-      status: "pending" as const,
-      notes: "",
-    },
-    {
-      id: "4",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      amount: 1200,
-      dueDate: "2025-09-30",
-      paidDate: "2025-09-29",
-      status: "paid" as const,
-      notes: "",
-    },
-  ]
+  const payments = initialPayments
 
   const filteredPayments = payments.filter((payment) => {
     const matchesStatus = filterStatus === "all" || payment.status === filterStatus
@@ -90,7 +52,13 @@ export function RentTrackingPage() {
         </Button>
       </div>
 
-      {showForm && <RentPaymentForm onClose={() => setShowForm(false)} />}
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <p className="text-red-700">Error loading payments: {error}</p>
+        </Card>
+      )}
+
+      {showForm && <RentPaymentForm onClose={() => setShowForm(false)} tenants={tenants} />}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

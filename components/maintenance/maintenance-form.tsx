@@ -8,13 +8,20 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
+import { createMaintenanceRequest } from "@/app/actions/maintenance"
+import { useRouter } from "next/navigation"
+import type { Tenant } from "@/lib/types"
 
 interface MaintenanceFormProps {
   onClose: () => void
+  tenants?: Tenant[]
 }
 
-export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
+export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const router = useRouter()
 
   const {
     register,
@@ -26,10 +33,36 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
 
   const onSubmit = async (data: MaintenanceRequestFormData) => {
     setIsSubmitting(true)
+    setError(null)
+    setSuccess(false)
+
     try {
-      // TODO: Call API to save maintenance request
-      console.log("Saving maintenance request:", data)
-      onClose()
+      // Convert to FormData for server action
+      const formData = new FormData()
+      formData.append('tenantId', data.tenantId)
+      formData.append('title', data.title)
+      formData.append('description', data.description)
+      formData.append('category', data.category)
+      formData.append('priority', data.priority)
+      formData.append('status', 'open')
+      if (data.estimatedCost) {
+        formData.append('estimatedCost', data.estimatedCost.toString())
+      }
+      if (data.assignedVendor) {
+        formData.append('assignedVendor', data.assignedVendor)
+      }
+
+      const result = await createMaintenanceRequest(formData)
+
+      if (result.success) {
+        setSuccess(true)
+        router.refresh()
+        setTimeout(() => {
+          onClose()
+        }, 1000)
+      } else {
+        setError(result.error || 'Failed to create maintenance request')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -46,6 +79,18 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-sm">Maintenance request created successfully!</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text mb-2">Tenant *</label>
@@ -54,9 +99,11 @@ export function MaintenanceForm({ onClose }: MaintenanceFormProps) {
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select a tenant</option>
-                <option value="1">John Smith (Unit 101)</option>
-                <option value="2">Sarah Johnson (Unit 202)</option>
-                <option value="3">Mike Davis (Unit 303)</option>
+                {tenants.map((tenant) => (
+                  <option key={tenant.id} value={tenant.id}>
+                    {tenant.name} (Unit {tenant.unitNumber})
+                  </option>
+                ))}
               </select>
               {errors.tenantId && <p className="text-red-600 text-sm mt-1">{errors.tenantId.message}</p>}
             </div>

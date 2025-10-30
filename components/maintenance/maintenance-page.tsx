@@ -7,76 +7,22 @@ import { Input } from "@/components/ui/input"
 import { MaintenanceForm } from "./maintenance-form"
 import { Plus, Search } from "lucide-react"
 import Link from "next/link"
+import type { MaintenanceRequestWithTenant } from "@/app/actions/maintenance"
+import type { Tenant } from "@/lib/types"
 
-export function MaintenancePage() {
+interface MaintenancePageProps {
+  initialRequests: MaintenanceRequestWithTenant[]
+  tenants: Tenant[]
+  error: string | null
+}
+
+export function MaintenancePage({ initialRequests, tenants, error }: MaintenancePageProps) {
   const [showForm, setShowForm] = useState(false)
   const [filterStatus, setFilterStatus] = useState<"all" | "open" | "in-progress" | "completed" | "cancelled">("all")
   const [filterPriority, setFilterPriority] = useState<"all" | "low" | "medium" | "high" | "urgent">("all")
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Mock data - will be replaced with real data from API
-  const requests = [
-    {
-      id: "1",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      title: "Leaky faucet in kitchen",
-      description: "Kitchen sink faucet is dripping constantly",
-      category: "Plumbing",
-      priority: "medium" as const,
-      status: "open" as const,
-      estimatedCost: 150,
-      actualCost: null,
-      assignedVendor: null,
-      createdAt: "2025-10-25",
-    },
-    {
-      id: "2",
-      tenantId: "2",
-      tenantName: "Sarah Johnson",
-      unitNumber: "202",
-      title: "HVAC not cooling",
-      description: "Air conditioning unit is not cooling the apartment",
-      category: "HVAC",
-      priority: "urgent" as const,
-      status: "in-progress" as const,
-      estimatedCost: 500,
-      actualCost: null,
-      assignedVendor: "Cool Air Services",
-      createdAt: "2025-10-23",
-    },
-    {
-      id: "3",
-      tenantId: "3",
-      tenantName: "Mike Davis",
-      unitNumber: "303",
-      title: "Door lock replacement",
-      description: "Front door lock is broken and needs replacement",
-      category: "Security",
-      priority: "high" as const,
-      status: "open" as const,
-      estimatedCost: 200,
-      actualCost: null,
-      assignedVendor: null,
-      createdAt: "2025-10-24",
-    },
-    {
-      id: "4",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      title: "Paint touch-up",
-      description: "Wall paint needs touch-up in living room",
-      category: "Painting",
-      priority: "low" as const,
-      status: "completed" as const,
-      estimatedCost: 100,
-      actualCost: 100,
-      assignedVendor: "Paint Pro",
-      createdAt: "2025-10-20",
-    },
-  ]
+  const requests = initialRequests
 
   const filteredRequests = requests.filter((request) => {
     const matchesStatus = filterStatus === "all" || request.status === filterStatus
@@ -97,6 +43,12 @@ export function MaintenancePage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <p className="text-red-700">Error loading maintenance requests: {error}</p>
+        </Card>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-text">Maintenance Requests</h1>
@@ -108,7 +60,7 @@ export function MaintenancePage() {
         </Button>
       </div>
 
-      {showForm && <MaintenanceForm onClose={() => setShowForm(false)} />}
+      {showForm && <MaintenanceForm onClose={() => setShowForm(false)} tenants={tenants} />}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

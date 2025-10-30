@@ -6,65 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CommunicationForm } from "./communication-form"
 import { Plus, Search, Trash2 } from "lucide-react"
+import type { CommunicationLogWithTenant } from "@/app/actions/communications"
+import type { Tenant } from "@/lib/types"
 
-export function CommunicationsPage() {
+interface CommunicationsPageProps {
+  initialCommunications: CommunicationLogWithTenant[]
+  tenants: Tenant[]
+  error: string | null
+}
+
+export function CommunicationsPage({ initialCommunications, tenants, error }: CommunicationsPageProps) {
   const [showForm, setShowForm] = useState(false)
   const [filterType, setFilterType] = useState<"all" | "email" | "phone" | "in-person" | "message">("all")
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Mock data - will be replaced with real data from API
-  const communications = [
-    {
-      id: "1",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      type: "email" as const,
-      subject: "Lease Renewal Discussion",
-      content: "Discussed lease renewal options for next year. Tenant interested in extending for another 2 years.",
-      createdAt: "2025-10-25T14:30:00",
-    },
-    {
-      id: "2",
-      tenantId: "2",
-      tenantName: "Sarah Johnson",
-      unitNumber: "202",
-      type: "phone" as const,
-      subject: "Maintenance Request Follow-up",
-      content: "Called tenant to confirm HVAC repair appointment. Scheduled for Oct 26 at 10 AM.",
-      createdAt: "2025-10-24T10:15:00",
-    },
-    {
-      id: "3",
-      tenantId: "3",
-      tenantName: "Mike Davis",
-      unitNumber: "303",
-      type: "in-person" as const,
-      subject: "Unit Inspection",
-      content: "Conducted quarterly unit inspection. Everything in good condition. Discussed upcoming lease renewal.",
-      createdAt: "2025-10-23T15:45:00",
-    },
-    {
-      id: "4",
-      tenantId: "1",
-      tenantName: "John Smith",
-      unitNumber: "101",
-      type: "message" as const,
-      subject: "Rent Payment Reminder",
-      content: "Sent reminder about upcoming rent payment due on Oct 31.",
-      createdAt: "2025-10-22T09:00:00",
-    },
-    {
-      id: "5",
-      tenantId: "2",
-      tenantName: "Sarah Johnson",
-      unitNumber: "202",
-      type: "email" as const,
-      subject: "Overdue Payment Notice",
-      content: "Sent formal notice regarding overdue rent payment. Requested payment within 5 business days.",
-      createdAt: "2025-10-21T11:20:00",
-    },
-  ]
+  const communications = initialCommunications
 
   const filteredCommunications = communications.filter((comm) => {
     const matchesType = filterType === "all" || comm.type === filterType
@@ -133,7 +89,13 @@ export function CommunicationsPage() {
         </Button>
       </div>
 
-      {showForm && <CommunicationForm onClose={() => setShowForm(false)} />}
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <p className="text-red-700">Error loading communications: {error}</p>
+        </Card>
+      )}
+
+      {showForm && <CommunicationForm onClose={() => setShowForm(false)} tenants={tenants} />}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
