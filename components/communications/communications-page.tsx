@@ -5,9 +5,21 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CommunicationForm } from "./communication-form"
-import { Plus, Search, Trash2 } from "lucide-react"
+import { Plus, Search, Trash2, Edit2 } from "lucide-react"
 import type { CommunicationLogWithTenant } from "@/app/actions/communications"
 import type { Tenant } from "@/lib/types"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { deleteCommunicationLog } from "@/app/actions/communications"
+import { useRouter } from "next/navigation"
 
 interface CommunicationsPageProps {
   initialCommunications: CommunicationLogWithTenant[]
@@ -17,10 +29,33 @@ interface CommunicationsPageProps {
 
 export function CommunicationsPage({ initialCommunications, tenants, error }: CommunicationsPageProps) {
   const [showForm, setShowForm] = useState(false)
+  const [editingLog, setEditingLog] = useState<CommunicationLogWithTenant | null>(null)
+  const [deletingLog, setDeletingLog] = useState<CommunicationLogWithTenant | null>(null)
   const [filterType, setFilterType] = useState<"all" | "email" | "phone" | "in-person" | "message">("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   const communications = initialCommunications
+
+  const handleDelete = async () => {
+    if (!deletingLog) return
+
+    setIsDeleting(true)
+    try {
+      const result = await deleteCommunicationLog(deletingLog.id)
+      if (result.success) {
+        router.refresh()
+        setDeletingLog(null)
+      } else {
+        alert(`Failed to delete communication log: ${result.error}`)
+      }
+    } catch (error) {
+      alert('An unexpected error occurred')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const filteredCommunications = communications.filter((comm) => {
     const matchesType = filterType === "all" || comm.type === filterType
@@ -83,7 +118,13 @@ export function CommunicationsPage({ initialCommunications, tenants, error }: Co
           <h1 className="text-3xl font-bold text-text">Communication Log</h1>
           <p className="text-text-secondary mt-1">Track all tenant interactions and communications</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
+        <Button
+          onClick={() => {
+            setEditingLog(null)
+            setShowForm(true)
+          }}
+          className="gap-2"
+        >
           <Plus size={20} />
           Log Communication
         </Button>
@@ -95,7 +136,26 @@ export function CommunicationsPage({ initialCommunications, tenants, error }: Co
         </Card>
       )}
 
-      {showForm && <CommunicationForm onClose={() => setShowForm(false)} tenants={tenants} />}
+      {showForm && (
+        <CommunicationForm
+          onClose={() => {
+            setShowForm(false)
+            setEditingLog(null)
+          }}
+          tenants={tenants}
+          editingLog={editingLog || undefined}
+          initialData={
+            editingLog
+              ? {
+                  tenantId: editingLog.tenantId,
+                  type: editingLog.type,
+                  subject: editingLog.subject,
+                  content: editingLog.content,
+                }
+              : undefined
+          }
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -192,9 +252,27 @@ export function CommunicationsPage({ initialCommunications, tenants, error }: Co
 
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-text-secondary">{formatDate(comm.createdAt)}</p>
-                    <Button variant="ghost" size="sm" className="p-1 text-red-600 hover:text-red-700">
-                      <Trash2 size={16} />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1"
+                        onClick={() => {
+                          setEditingLog(comm)
+                          setShowForm(true)
+                        }}
+                      >
+                        <Edit2 size={16} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingLog(comm)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -208,6 +286,27 @@ export function CommunicationsPage({ initialCommunications, tenants, error }: Co
           </div>
         )}
       </Card>
+
+      <AlertDialog open={!!deletingLog} onOpenChange={() => setDeletingLog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Communication Log</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this communication log: <strong>{deletingLog?.subject}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

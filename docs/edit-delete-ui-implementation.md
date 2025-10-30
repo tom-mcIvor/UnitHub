@@ -1,7 +1,7 @@
 # Edit/Delete UI Implementation
 
 **Date**: 2025-10-31
-**Status**: Partial - 2 of 5 features completed
+**Status**: Partial - 4 of 5 features completed
 
 ---
 
@@ -59,60 +59,43 @@ Modified 2 files to add full CRUD UI for rent payments:
    - Updated `<RentPaymentForm>` to pass `editingPayment` and `initialData` props
    - Added `<AlertDialog>` at end with confirmation message showing amount and tenant name
 
+### Communications Edit/Delete Functionality
+Modified 2 files to enable full lifecycle management for communication logs:
+
+1. **`/components/communications/communication-form.tsx`** (Modified)
+   - Added `editingLog?: CommunicationLogWithTenant` and `initialData?: CommunicationLogFormData` props
+   - Added `isEditing` flag to branch between create and update flows
+   - Updated `onSubmit` to call `updateCommunicationLog(id, formData)` when editing
+   - Adjusted headings, button labels, and success messaging to reflect edit vs create state
+   - Ensured Cancel button uses `type="button"` so it no longer submits the form while editing
+
+2. **`/components/communications/communications-page.tsx`** (Modified)
+   - Tracks `editingLog` alongside existing delete state
+   - Opens the form in edit mode with pre-populated data when users click the new Edit button
+   - Resets both modal visibility and editing state on close
+   - Adds Edit icon to each timeline entry while retaining the existing delete confirmation dialog
+
 ---
 
 ## Problems That Still Exist
 
-### 1. Maintenance Requests Missing Edit/Delete UI
-**Location**: `/components/maintenance/maintenance-page.tsx`, `/components/maintenance/maintenance-form.tsx`
-**Issue**: Server actions `updateMaintenanceRequest()` and `deleteMaintenanceRequest()` exist at `/app/actions/maintenance.ts:189-282` but UI components have no edit/delete buttons.
+### 1. Documents Still Missing Edit UI
+**Location**: `/components/documents/documents-page.tsx`, `/components/documents/document-upload.tsx`
+**Issue**: Users can delete documents but there is no way to update metadata once created.
 
-**Related to new code**: Same pattern as tenants/rent payments needs to be applied.
-
-**Suggested solutions**:
-- Apply identical pattern from rent payments implementation
-- Add Edit/Delete buttons to maintenance requests table
-- Add state management for editing/deleting
-- Update form to accept `editingRequest` prop
-- Add AlertDialog confirmation
-
-**Where to look**:
-- `/components/maintenance/maintenance-page.tsx:133-192` - Table where buttons should be added
-- `/components/maintenance/maintenance-form.tsx:1-254` - Form that needs edit mode
-- `/app/actions/maintenance.ts:189-252` - `updateMaintenanceRequest()` server action
-- `/app/actions/maintenance.ts:255-282` - `deleteMaintenanceRequest()` server action
-
-### 2. Documents Missing Delete UI
-**Location**: `/components/documents/documents-page.tsx`
-**Issue**: Server actions `updateDocument()` and `deleteDocument()` exist at `/app/actions/documents.ts:150-229` but UI has no delete buttons. Edit is less important since documents are mostly view-only.
-
-**Related to new code**: Same delete pattern needs to be applied (edit optional).
+**Related to new code**: Communications now mirror other modules with full edit/delete support, making documents the lone holdout.
 
 **Suggested solutions**:
-- Add Delete button to documents table/card
-- Add AlertDialog confirmation warning that file metadata will be deleted (note: actual files in storage are not deleted yet since file upload not implemented)
-- Optionally add edit for metadata fields only
+- Introduce an edit modal similar to `CommunicationForm`, pre-filling existing metadata
+- Reuse `DocumentUpload` form logic or extract shared fields into a new component
+- Call `updateDocument()` from `/app/actions/documents.ts:150-202` when saving edits
 
 **Where to look**:
-- `/components/documents/documents-page.tsx:95-155` - Cards where delete button should be added
-- `/app/actions/documents.ts:205-229` - `deleteDocument()` server action
+- `/components/documents/documents-page.tsx:95-155` - Card actions to add Edit button
+- `/components/documents/document-upload.tsx` - Starting point for form fields
+- `/app/actions/documents.ts:150-202` - Server action already supports updates
 
-### 3. Communication Logs Missing Delete UI
-**Location**: `/components/communications/communications-page.tsx`
-**Issue**: Server actions `updateCommunicationLog()` and `deleteCommunicationLog()` exist at `/app/actions/communications.ts:145-224` but UI has no delete buttons.
-
-**Related to new code**: Same delete pattern needs to be applied.
-
-**Suggested solutions**:
-- Add Delete button to communication logs table
-- Add AlertDialog confirmation
-- Edit is optional since logs are typically immutable
-
-**Where to look**:
-- `/components/communications/communications-page.tsx:121-172` - Table where delete button should be added
-- `/app/actions/communications.ts:200-224` - `deleteCommunicationLog()` server action
-
-### 4. Detail Pages Still Use Mock Data
+### 2. Detail Pages Still Use Mock Data
 **Location**: `/app/tenants/[id]/page.tsx`, `/app/maintenance/[id]/page.tsx`
 **Issue**: Despite edit/delete working on list pages, detail pages don't fetch real data.
 

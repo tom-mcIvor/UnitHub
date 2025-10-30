@@ -8,20 +8,24 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
-import { createCommunicationLog } from "@/app/actions/communications"
+import { createCommunicationLog, updateCommunicationLog } from "@/app/actions/communications"
 import { useRouter } from "next/navigation"
 import type { Tenant } from "@/lib/types"
+import type { CommunicationLogWithTenant } from "@/app/actions/communications"
 
 interface CommunicationFormProps {
   onClose: () => void
   tenants?: Tenant[]
+  editingLog?: CommunicationLogWithTenant
+  initialData?: CommunicationLogFormData
 }
 
-export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormProps) {
+export function CommunicationForm({ onClose, tenants = [], editingLog, initialData }: CommunicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const isEditing = !!editingLog
 
   const {
     register,
@@ -29,6 +33,7 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
     formState: { errors },
   } = useForm<CommunicationLogFormData>({
     resolver: zodResolver(communicationLogSchema),
+    defaultValues: initialData,
   })
 
   const onSubmit = async (data: CommunicationLogFormData) => {
@@ -44,7 +49,9 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
       formData.append('subject', data.subject)
       formData.append('content', data.content)
 
-      const result = await createCommunicationLog(formData)
+      const result = isEditing
+        ? await updateCommunicationLog(editingLog.id, formData)
+        : await createCommunicationLog(formData)
 
       if (result.success) {
         setSuccess(true)
@@ -53,7 +60,7 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
           onClose()
         }, 1000)
       } else {
-        setError(result.error || 'Failed to log communication')
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'log'} communication`)
       }
     } finally {
       setIsSubmitting(false)
@@ -64,7 +71,7 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <div className="border-b border-border p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-text">Log Communication</h2>
+          <h2 className="text-2xl font-bold text-text">{isEditing ? 'Edit Communication' : 'Log Communication'}</h2>
           <button onClick={onClose} className="p-1 hover:bg-surface rounded">
             <X size={24} />
           </button>
@@ -79,7 +86,9 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
 
           {success && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">Communication logged successfully!</p>
+              <p className="text-green-700 text-sm">
+                Communication {isEditing ? 'updated' : 'logged'} successfully!
+              </p>
             </div>
           )}
 
@@ -131,11 +140,17 @@ export function CommunicationForm({ onClose, tenants = [] }: CommunicationFormPr
           </div>
 
           <div className="flex gap-3 justify-end pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Log Communication"}
+            <Button type="submit" disabled={isSubmitting || success}>
+              {isSubmitting
+                ? "Saving..."
+                : success
+                  ? "Saved!"
+                  : isEditing
+                    ? "Update Communication"
+                    : "Log Communication"}
             </Button>
           </div>
         </form>
