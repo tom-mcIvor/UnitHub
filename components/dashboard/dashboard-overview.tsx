@@ -4,31 +4,45 @@ import { RecentTenants } from "./recent-tenants"
 import { UpcomingPayments } from "./upcoming-payments"
 import { MaintenanceOverview } from "./maintenance-overview"
 import { Users, DollarSign, AlertCircle, Wrench } from "lucide-react"
+import type { DashboardStats, RecentTenant, UpcomingPayment, RecentMaintenanceRequest } from "@/app/actions/dashboard"
 
-export function DashboardOverview() {
-  // Mock data - will be replaced with real data from API
-  const stats = [
+interface DashboardOverviewProps {
+  stats: DashboardStats | null
+  recentTenants: RecentTenant[]
+  upcomingPayments: UpcomingPayment[]
+  recentMaintenance: RecentMaintenanceRequest[]
+  error: string | null
+}
+
+export function DashboardOverview({
+  stats,
+  recentTenants,
+  upcomingPayments,
+  recentMaintenance,
+  error,
+}: DashboardOverviewProps) {
+  const statCards = [
     {
       label: "Total Tenants",
-      value: "24",
+      value: stats?.totalTenants.toString() || "0",
       icon: Users,
       color: "bg-blue-100 text-blue-600",
     },
     {
       label: "Monthly Income",
-      value: "$12,450",
+      value: `$${parseFloat(stats?.monthlyIncome || "0").toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       color: "bg-green-100 text-green-600",
     },
     {
       label: "Pending Payments",
-      value: "3",
+      value: stats?.pendingPayments.toString() || "0",
       icon: AlertCircle,
       color: "bg-yellow-100 text-yellow-600",
     },
     {
       label: "Open Maintenance",
-      value: "7",
+      value: stats?.openMaintenance.toString() || "0",
       icon: Wrench,
       color: "bg-orange-100 text-orange-600",
     },
@@ -41,9 +55,15 @@ export function DashboardOverview() {
         <p className="text-text-secondary mt-1">Welcome back! Here's your property overview.</p>
       </div>
 
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
@@ -51,12 +71,12 @@ export function DashboardOverview() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <UpcomingPayments />
-          <MaintenanceOverview />
+          <UpcomingPayments payments={upcomingPayments} />
+          <MaintenanceOverview requests={recentMaintenance} />
         </div>
 
         <div>
-          <RecentTenants />
+          <RecentTenants tenants={recentTenants} />
         </div>
       </div>
     </div>

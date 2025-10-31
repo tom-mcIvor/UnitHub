@@ -5,28 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit2, Mail, Phone, MapPin, Calendar, DollarSign } from "lucide-react"
 import Link from "next/link"
+import type { Tenant } from "@/lib/types"
 
 interface TenantDetailProps {
-  tenantId: string
+  tenant: Tenant
 }
 
-export function TenantDetail({ tenantId }: TenantDetailProps) {
-  // Mock data - will be replaced with real data from API
-  const tenant = {
-    id: tenantId,
-    name: "John Smith",
-    email: "john@example.com",
-    phone: "555-0101",
-    unitNumber: "101",
-    leaseStartDate: "2023-01-15",
-    leaseEndDate: "2025-01-14",
-    rentAmount: 1200,
-    depositAmount: 1200,
-    petPolicy: "No pets",
-    notes: "Excellent tenant, pays on time",
+export function TenantDetail({ tenant }: TenantDetailProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  const isLeaseExpiringSoon = new Date(tenant.leaseEndDate) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+  const isLeaseExpiringSoon = new Date(tenant.lease_end) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
 
   return (
     <div className="space-y-6">
@@ -39,7 +30,7 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-text">{tenant.name}</h1>
-          <p className="text-text-secondary mt-1">Unit {tenant.unitNumber}</p>
+          <p className="text-text-secondary mt-1">Unit {tenant.unit_number}</p>
         </div>
         <Button className="gap-2">
           <Edit2 size={20} />
@@ -70,7 +61,7 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
               <MapPin size={20} className="text-primary" />
               <div>
                 <p className="text-sm text-text-secondary">Unit</p>
-                <p className="text-text font-medium">{tenant.unitNumber}</p>
+                <p className="text-text font-medium">{tenant.unit_number}</p>
               </div>
             </div>
           </div>
@@ -85,7 +76,7 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
               <div>
                 <p className="text-sm text-text-secondary">Lease Period</p>
                 <p className="text-text font-medium">
-                  {tenant.leaseStartDate} to {tenant.leaseEndDate}
+                  {formatDate(tenant.lease_start)} to {formatDate(tenant.lease_end)}
                 </p>
                 {isLeaseExpiringSoon && <Badge className="mt-2 bg-yellow-100 text-yellow-700">Expiring Soon</Badge>}
               </div>
@@ -94,12 +85,12 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
               <DollarSign size={20} className="text-primary" />
               <div>
                 <p className="text-sm text-text-secondary">Monthly Rent</p>
-                <p className="text-text font-medium">${tenant.rentAmount}</p>
+                <p className="text-text font-medium">${parseFloat(tenant.rent_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
             <div>
               <p className="text-sm text-text-secondary mb-1">Pet Policy</p>
-              <p className="text-text font-medium">{tenant.petPolicy}</p>
+              <p className="text-text font-medium">{tenant.pet_policy || 'No policy specified'}</p>
             </div>
           </div>
         </Card>
@@ -111,15 +102,15 @@ export function TenantDetail({ tenantId }: TenantDetailProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-surface rounded-lg">
             <p className="text-sm text-text-secondary mb-1">Monthly Rent</p>
-            <p className="text-2xl font-bold text-text">${tenant.rentAmount}</p>
+            <p className="text-2xl font-bold text-text">${parseFloat(tenant.rent_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="p-4 bg-surface rounded-lg">
             <p className="text-sm text-text-secondary mb-1">Security Deposit</p>
-            <p className="text-2xl font-bold text-text">${tenant.depositAmount}</p>
+            <p className="text-2xl font-bold text-text">${parseFloat(tenant.deposit_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="p-4 bg-surface rounded-lg">
             <p className="text-sm text-text-secondary mb-1">Annual Income</p>
-            <p className="text-2xl font-bold text-text">${tenant.rentAmount * 12}</p>
+            <p className="text-2xl font-bold text-text">${(parseFloat(tenant.rent_amount) * 12).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
           </div>
         </div>
       </Card>

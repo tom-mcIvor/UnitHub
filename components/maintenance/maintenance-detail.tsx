@@ -5,29 +5,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit2, Wrench, User, Calendar } from "lucide-react"
 import Link from "next/link"
+import type { MaintenanceRequestWithTenant } from "@/app/actions/maintenance"
 
 interface MaintenanceDetailProps {
-  requestId: string
+  request: MaintenanceRequestWithTenant
 }
 
-export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
-  // Mock data - will be replaced with real data from API
-  const request = {
-    id: requestId,
-    tenantId: "2",
-    tenantName: "Sarah Johnson",
-    unitNumber: "202",
-    title: "HVAC not cooling",
-    description: "Air conditioning unit is not cooling the apartment. Temperature stays at 78F even with AC on.",
-    category: "HVAC",
-    priority: "urgent" as const,
-    status: "in-progress" as const,
-    estimatedCost: 500,
-    actualCost: null,
-    assignedVendor: "Cool Air Services",
-    photos: [],
-    createdAt: "2025-10-23",
-    updatedAt: "2025-10-25",
+export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  const formatCost = (amount: string | number | null) => {
+    if (!amount) return null
+    return parseFloat(amount.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   const getPriorityColor = (priority: string) => {
@@ -69,7 +61,7 @@ export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-text">{request.title}</h1>
-          <p className="text-text-secondary mt-1">Unit {request.unitNumber}</p>
+          <p className="text-text-secondary mt-1">Unit {request.tenantUnitNumber || 'N/A'}</p>
         </div>
         <Button className="gap-2">
           <Edit2 size={20} />
@@ -113,11 +105,11 @@ export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-text-secondary mb-1">Estimated Cost</p>
-                <p className="text-2xl font-bold text-text">${request.estimatedCost}</p>
+                <p className="text-2xl font-bold text-text">{request.estimated_cost ? `$${formatCost(request.estimated_cost)}` : '-'}</p>
               </div>
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-text-secondary mb-1">Actual Cost</p>
-                <p className="text-2xl font-bold text-text">{request.actualCost ? `$${request.actualCost}` : "-"}</p>
+                <p className="text-2xl font-bold text-text">{request.actual_cost ? `$${formatCost(request.actual_cost)}` : "-"}</p>
               </div>
             </div>
           </Card>
@@ -130,14 +122,14 @@ export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
                 <Calendar size={20} className="text-primary" />
                 <div>
                   <p className="text-sm text-text-secondary">Created</p>
-                  <p className="text-text font-medium">{request.createdAt}</p>
+                  <p className="text-text font-medium">{formatDate(request.created_at)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Calendar size={20} className="text-primary" />
                 <div>
                   <p className="text-sm text-text-secondary">Last Updated</p>
-                  <p className="text-text font-medium">{request.updatedAt}</p>
+                  <p className="text-text font-medium">{formatDate(request.updated_at)}</p>
                 </div>
               </div>
             </div>
@@ -153,10 +145,10 @@ export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
               <User size={20} className="text-primary" />
               <div>
                 <p className="text-sm text-text-secondary">Name</p>
-                <p className="text-text font-medium">{request.tenantName}</p>
+                <p className="text-text font-medium">{request.tenantName || 'Unknown'}</p>
               </div>
             </div>
-            <Link href={`/tenants/${request.tenantId}`}>
+            <Link href={`/tenants/${request.tenant_id}`}>
               <Button variant="outline" className="w-full bg-transparent">
                 View Tenant
               </Button>
@@ -175,10 +167,10 @@ export function MaintenanceDetail({ requestId }: MaintenanceDetailProps) {
           {/* Vendor */}
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-text mb-4">Assigned Vendor</h2>
-            {request.assignedVendor ? (
+            {request.assigned_vendor ? (
               <div className="flex items-center gap-3">
                 <User size={20} className="text-primary" />
-                <p className="text-text font-medium">{request.assignedVendor}</p>
+                <p className="text-text font-medium">{request.assigned_vendor}</p>
               </div>
             ) : (
               <p className="text-text-secondary">No vendor assigned</p>

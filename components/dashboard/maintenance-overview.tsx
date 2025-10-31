@@ -1,31 +1,12 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import type { RecentMaintenanceRequest } from "@/app/actions/dashboard"
 
-export function MaintenanceOverview() {
-  const requests = [
-    {
-      id: 1,
-      title: "Leaky faucet in kitchen",
-      unit: "101",
-      priority: "medium",
-      status: "open",
-    },
-    {
-      id: 2,
-      title: "HVAC not cooling",
-      unit: "202",
-      priority: "urgent",
-      status: "in-progress",
-    },
-    {
-      id: 3,
-      title: "Door lock replacement",
-      unit: "303",
-      priority: "high",
-      status: "open",
-    },
-  ]
+interface MaintenanceOverviewProps {
+  requests: RecentMaintenanceRequest[]
+}
 
+export function MaintenanceOverview({ requests }: MaintenanceOverviewProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
@@ -45,25 +26,29 @@ export function MaintenanceOverview() {
     <Card className="p-6">
       <h2 className="text-lg font-semibold text-text mb-4">Recent Maintenance Requests</h2>
 
-      <div className="space-y-3">
-        {requests.map((request) => (
-          <div
-            key={request.id}
-            className="flex items-center justify-between p-4 bg-surface rounded-lg hover:bg-border transition-colors"
-          >
-            <div className="flex-1">
-              <p className="font-medium text-text">{request.title}</p>
-              <p className="text-sm text-text-secondary">Unit {request.unit}</p>
+      {requests.length === 0 ? (
+        <p className="text-sm text-text-secondary text-center py-8">No open maintenance requests</p>
+      ) : (
+        <div className="space-y-3">
+          {requests.map((request) => (
+            <div
+              key={request.id}
+              className="flex items-center justify-between p-4 bg-surface rounded-lg hover:bg-border transition-colors"
+            >
+              <div className="flex-1">
+                <p className="font-medium text-text">{request.title}</p>
+                <p className="text-sm text-text-secondary">Unit {request.unit_number}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className={getPriorityColor(request.priority)}>
+                  {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
+                </Badge>
+                <Badge variant="outline">{request.status}</Badge>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className={getPriorityColor(request.priority)}>
-                {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
-              </Badge>
-              <Badge variant="outline">{request.status}</Badge>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </Card>
   )
 }

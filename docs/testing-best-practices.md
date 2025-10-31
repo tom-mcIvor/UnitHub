@@ -583,23 +583,44 @@ For component tests failing with `Request is not defined`:
 
 ## Next Steps
 
-### Short Term (1-2 weeks)
-1. ✅ Complete all server action tests (DONE)
-2. ⏳ Fix component test environment issues
-3. ⏳ Add tests for edge cases in server actions
-4. ⏳ Set up E2E testing with Playwright
+**📋 See [`docs/testing-roadmap.md`](./testing-roadmap.md) for your complete testing guide including:**
+- Overview and current status
+- Quick start guides for different scenarios
+- How to run tests and view coverage
+- 4-phase implementation plan
+- Learning resources and troubleshooting
+- Complete test checklist
 
-### Medium Term (1 month)
-1. ⏳ Create integration test suite with test database
-2. ⏳ Add visual regression testing with Storybook
-3. ⏳ Implement CI/CD pipeline with automatic testing
-4. ⏳ Add code coverage reporting
+### Quick Reference
 
-### Long Term (2-3 months)
-1. ⏳ Achieve 80%+ overall code coverage
-2. ⏳ Performance testing and benchmarking
-3. ⏳ Security testing (SQL injection, XSS, CSRF)
-4. ⏳ Accessibility testing (WCAG compliance)
+**Phase 1 - Fix Foundation** (1-2 days)
+- Fix component coverage tracking
+- Un-mock RentChart
+- Create test helpers
+
+**Phase 2 - Core Coverage** (1 week)
+- Test all AI API routes
+- Test all page components
+- Test untested application components
+- Test layout components
+
+**Phase 3 - Integration Testing** (3-4 days)
+- Set up test database
+- Test critical workflows
+- Verify data integrity
+
+**Phase 4 - E2E & Advanced** (1 week)
+- Set up Playwright E2E tests
+- Visual regression with Storybook
+- Accessibility testing
+- Performance benchmarking
+
+### Coverage Goals
+- Current: **12%** overall
+- Phase 1: **25%**
+- Phase 2: **50%**
+- Phase 3: **60%**
+- Phase 4: **70%+**
 
 ---
 

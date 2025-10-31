@@ -310,8 +310,20 @@ Time:        5.632 s
 - `package.json` - Added test scripts and devDependencies
 
 ## Next Recommended Steps
+
+**📋 See [`docs/testing-roadmap.md`](./testing-roadmap.md) for the complete testing plan including:**
+- Quick start guide and running tests
+- 4-phase implementation plan with detailed tasks
+- Timeline estimates and priorities
+- Learning resources and troubleshooting
+- Complete test checklist
+
+**Quick priorities:**
 1. Add targeted coverage or visual tests for `RentChart` since it is currently mocked.
-2. Introduce integration/E2E tests (Playwright or Cypress) for rent tracking and tenant workflows.
-3. Harden component selectors by adding semantic labels or test IDs to reduce copy brittleness.
-4. Consider Storybook/Chromatic to catch UI regressions alongside the behavioral suites.
-5. Automate test execution in CI and capture coverage artifacts once the suite stabilizes.
+2. Fix component coverage tracking (currently showing 0% despite passing tests)
+3. Test AI API routes (currently 0% coverage)
+4. Test page components (currently 0% coverage)
+5. Introduce integration/E2E tests (Playwright or Cypress) for rent tracking and tenant workflows.
+6. Harden component selectors by adding semantic labels or test IDs to reduce copy brittleness.
+7. Consider Storybook/Chromatic to catch UI regressions alongside the behavioral suites.
+8. Automate test execution in CI and capture coverage artifacts once the suite stabilizes.

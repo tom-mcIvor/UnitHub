@@ -1,7 +1,7 @@
 # Complete Database Integration Implementation
 
-**Date**: 2025-10-30
-**Status**: All core features connected to Supabase database
+**Date**: 2025-10-30 (Updated: 2025-10-31)
+**Status**: All core features connected to Supabase database. Dashboard and detail pages now fetch real data.
 
 ---
 
@@ -110,20 +110,7 @@ Added `export const dynamic = 'force-dynamic'` to all database-dependent pages t
 - Forms need `initialData` prop to distinguish create vs update mode
 - Pass record ID to form for update operations
 
-### 2. Tenant Detail Pages Not Updated
-**Location**: `/app/tenants/[id]/page.tsx`, `/app/maintenance/[id]/page.tsx`
-**Issue**: Detail view pages still use mock data or show no data.
-
-**Related Code**:
-- `/app/actions/tenants.ts:48-69` - `getTenant(id)` exists but not called from detail page
-- `/app/actions/maintenance.ts:75-103` - `getMaintenanceRequest(id)` exists but not called
-
-**Suggested Solutions**:
-- Convert detail pages to async Server Components
-- Call `getTenant(params.id)` or `getMaintenanceRequest(params.id)`
-- Pass data as props to detail view client component
-
-### 3. File Upload Not Implemented
+### 2. File Upload Not Implemented
 **Location**: `/components/documents/document-upload.tsx`
 **Issue**: Form exists but does not upload files to Supabase Storage.
 
