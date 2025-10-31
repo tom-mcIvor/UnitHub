@@ -112,7 +112,7 @@ export async function createRentPayment(formData: FormData): Promise<{
     const rawData = Object.fromEntries(formData.entries())
     const parsed = rentPaymentSchema.safeParse({
       ...rawData,
-      amount: parseFloat(rawData.amount as string),
+      amount: rawData.amount ? parseFloat(rawData.amount as string) : undefined,
     })
 
     if (!parsed.success) {
@@ -182,7 +182,7 @@ export async function updateRentPayment(
     const rawData = Object.fromEntries(formData.entries())
     const parsed = rentPaymentSchema.safeParse({
       ...rawData,
-      amount: parseFloat(rawData.amount as string),
+      amount: rawData.amount ? parseFloat(rawData.amount as string) : undefined,
     })
 
     if (!parsed.success) {

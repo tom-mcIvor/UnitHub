@@ -1,11 +1,12 @@
 import { generateText } from "ai"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
     const { title, description } = await request.json()
 
     if (!title || !description) {
-      return Response.json({ error: "Title and description are required" }, { status: 400 })
+      return NextResponse.json({ error: "Title and description are required" }, { status: 400 })
     }
 
     const { text } = await generateText({
@@ -24,7 +25,7 @@ Return as JSON with fields: category, priority, estimatedCost, summary. Return O
 
     const analysis = JSON.parse(text)
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       category: analysis.category,
       priority: analysis.priority,
@@ -33,6 +34,6 @@ Return as JSON with fields: category, priority, estimatedCost, summary. Return O
     })
   } catch (error) {
     console.error("Maintenance categorization error:", error)
-    return Response.json({ error: "Failed to categorize maintenance request" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to categorize maintenance request" }, { status: 500 })
   }
 }

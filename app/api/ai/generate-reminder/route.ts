@@ -1,11 +1,12 @@
 import { generateText } from "ai"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
     const { tenantName, daysOverdue, rentAmount } = await request.json()
 
     if (!tenantName || daysOverdue === undefined || !rentAmount) {
-      return Response.json({ error: "Required fields missing" }, { status: 400 })
+      return NextResponse.json({ error: "Required fields missing" }, { status: 400 })
     }
 
     const { text } = await generateText({
@@ -26,12 +27,12 @@ Return as JSON with field "message" containing the full message text. Return ONL
 
     const result = JSON.parse(text)
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       message: result.message,
     })
   } catch (error) {
     console.error("Reminder generation error:", error)
-    return Response.json({ error: "Failed to generate reminder" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to generate reminder" }, { status: 500 })
   }
 }

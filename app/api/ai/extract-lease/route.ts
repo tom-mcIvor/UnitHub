@@ -1,11 +1,12 @@
 import { generateText } from "ai"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
     const { leaseText } = await request.json()
 
     if (!leaseText) {
-      return Response.json({ error: "Lease text is required" }, { status: 400 })
+      return NextResponse.json({ error: "Lease text is required" }, { status: 400 })
     }
 
     const { text } = await generateText({
@@ -21,7 +22,7 @@ Return ONLY valid JSON, no other text.`,
     // Parse the JSON response
     const extractedData = JSON.parse(text)
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       data: extractedData,
       confidence: {
@@ -35,6 +36,6 @@ Return ONLY valid JSON, no other text.`,
     })
   } catch (error) {
     console.error("Lease extraction error:", error)
-    return Response.json({ error: "Failed to extract lease data" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to extract lease data" }, { status: 500 })
   }
 }

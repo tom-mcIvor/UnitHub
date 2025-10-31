@@ -52,8 +52,8 @@ describe("MaintenanceForm", () => {
   });
 
   it("displays validation errors for required fields", async () => {
-    render(<MaintenanceForm onClose={onClose} tenants={mockTenants} />);
     const user = userEvent.setup();
+    render(<MaintenanceForm onClose={onClose} tenants={mockTenants} />);
 
     await user.click(screen.getByRole("button", { name: "Create Request" }));
 
@@ -64,22 +64,21 @@ describe("MaintenanceForm", () => {
   });
 
   it("submits the form with valid data for creating a request", async () => {
-
-
+    const user = userEvent.setup();
+    const createMaintenanceRequest = jest.fn().mockResolvedValue({ success: true });
 
     render(<MaintenanceForm onClose={onClose} tenants={mockTenants} />);
-    const user = userEvent.setup();
 
     await user.selectOptions(screen.getByLabelText("Tenant *"), "1");
     await user.selectOptions(screen.getByLabelText("Category *"), "Plumbing");
     await user.type(screen.getByLabelText("Title *"), "Leaky faucet");
+    await user.type(screen.getByLabelText("Description *"), "The kitchen sink is leaking.");
+
     await act(async () => {
       fireEvent.submit(screen.getByTestId('maintenance-form'))
     });
 
-            const createMaintenanceRequest = jest.fn().mockResolvedValue({ success: true });
-
-            expect(await screen.findByText("Maintenance request created successfully!")).toBeInTheDocument();
+    expect(await screen.findByText("Maintenance request created successfully!")).toBeInTheDocument();
   });
 
   it("calls onClose when the cancel button is clicked", () => {

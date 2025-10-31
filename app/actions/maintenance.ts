@@ -115,7 +115,7 @@ export async function createMaintenanceRequest(formData: FormData): Promise<{
     const rawData = Object.fromEntries(formData.entries())
     const parsed = maintenanceRequestSchema.safeParse({
       ...rawData,
-      estimatedCost: parseFloat(rawData.estimatedCost as string),
+      estimatedCost: rawData.estimatedCost ? parseFloat(rawData.estimatedCost as string) : undefined,
     })
 
     if (!parsed.success) {
@@ -188,7 +188,7 @@ export async function updateMaintenanceRequest(
     const rawData = Object.fromEntries(formData.entries())
     const parsed = maintenanceRequestSchema.safeParse({
       ...rawData,
-      estimatedCost: parseFloat(rawData.estimatedCost as string),
+      estimatedCost: rawData.estimatedCost ? parseFloat(rawData.estimatedCost as string) : undefined,
     })
 
     if (!parsed.success) {

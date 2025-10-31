@@ -1,11 +1,12 @@
 import { generateText } from "ai"
+import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
     const { category, priority, description } = await request.json()
 
     if (!category || !priority) {
-      return Response.json({ error: "Category and priority are required" }, { status: 400 })
+      return NextResponse.json({ error: "Category and priority are required" }, { status: 400 })
     }
 
     const { text } = await generateText({
@@ -21,12 +22,12 @@ Return as JSON with array field "suggestions" containing objects with "vendorTyp
 
     const suggestions = JSON.parse(text)
 
-    return Response.json({
+    return NextResponse.json({
       success: true,
       suggestions: suggestions.suggestions,
     })
   } catch (error) {
     console.error("Vendor suggestion error:", error)
-    return Response.json({ error: "Failed to suggest vendors" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to suggest vendors" }, { status: 500 })
   }
 }

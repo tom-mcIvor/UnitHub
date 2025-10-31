@@ -92,7 +92,7 @@ describe('Tenant Server Actions', () => {
       const formData = new FormData()
       formData.append('name', 'Jane Smith')
       formData.append('email', 'jane@example.com')
-      formData.append('phone', '555-5678')
+      formData.append('phone', '555-123-5678')
       formData.append('unitNumber', '102')
       formData.append('leaseStartDate', '2024-02-01')
       formData.append('leaseEndDate', '2025-02-01')
@@ -102,6 +102,10 @@ describe('Tenant Server Actions', () => {
       formData.append('notes', 'New tenant')
 
       const result = await createTenant(formData)
+
+      if (!result.success) {
+        console.log('Create tenant error:', result.error)
+      }
 
       expect(result.success).toBe(true)
       expect(result.error).toBeNull()
@@ -128,7 +132,7 @@ describe('Tenant Server Actions', () => {
       const formData = new FormData()
       formData.append('name', 'John Doe Updated')
       formData.append('email', 'john.updated@example.com')
-      formData.append('phone', '555-9999')
+      formData.append('phone', '555-123-9999')
       formData.append('unitNumber', '101')
       formData.append('leaseStartDate', '2024-01-01')
       formData.append('leaseEndDate', '2025-01-01')
