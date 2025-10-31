@@ -1,4 +1,5 @@
 import { getTenants, getTenant, createTenant, updateTenant, deleteTenant } from '@/app/actions/tenants'
+import { tenantSchema } from '@/lib/schemas'
 
 // Mock Supabase
 jest.mock('@/lib/supabase/server', () => ({
@@ -113,9 +114,12 @@ describe('Tenant Server Actions', () => {
       // Missing required fields
 
       const result = await createTenant(formData)
+      const parsed = tenantSchema.safeParse(Object.fromEntries(formData))
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Missing required fields')
+      if (!parsed.success) {
+        expect(result.error).toBe(parsed.error.errors.map((e) => e.message).join('\n'))
+      }
     })
   })
 

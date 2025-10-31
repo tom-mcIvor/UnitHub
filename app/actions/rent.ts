@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { rentPaymentSchema } from '@/lib/schemas'
 import type { RentPayment } from '@/lib/types'
+import { z } from 'zod'
 
 // Extended type with tenant info for display
 export interface RentPaymentWithTenant extends RentPayment {
@@ -107,28 +109,29 @@ export async function createRentPayment(formData: FormData): Promise<{
   try {
     const supabase = await createClient()
 
-    // Extract and validate required fields
-    const tenantId = formData.get('tenantId') as string
-    const amount = formData.get('amount') as string
-    const dueDate = formData.get('dueDate') as string
-    const paidDate = formData.get('paidDate') as string
-    const status = formData.get('status') as string
-    const notes = formData.get('notes') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = rentPaymentSchema.safeParse({
+      ...rawData,
+      amount: parseFloat(rawData.amount as string),
+    })
 
-    if (!tenantId || !amount || !dueDate || !status) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, amount, dueDate, paidDate, status, notes } = parsed.data
 
     // Insert into database
     const { data, error } = await supabase
       .from('rent_payments')
       .insert({
         tenant_id: tenantId,
-        amount: parseFloat(amount),
+        amount: amount,
         due_date: dueDate,
         paid_date: paidDate || null,
         status: status,
@@ -176,28 +179,29 @@ export async function updateRentPayment(
   try {
     const supabase = await createClient()
 
-    // Extract fields
-    const tenantId = formData.get('tenantId') as string
-    const amount = formData.get('amount') as string
-    const dueDate = formData.get('dueDate') as string
-    const paidDate = formData.get('paidDate') as string
-    const status = formData.get('status') as string
-    const notes = formData.get('notes') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = rentPaymentSchema.safeParse({
+      ...rawData,
+      amount: parseFloat(rawData.amount as string),
+    })
 
-    if (!tenantId || !amount || !dueDate || !status) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, amount, dueDate, paidDate, status, notes } = parsed.data
 
     // Update in database
     const { data, error } = await supabase
       .from('rent_payments')
       .update({
         tenant_id: tenantId,
-        amount: parseFloat(amount),
+        amount: amount,
         due_date: dueDate,
         paid_date: paidDate || null,
         status: status,

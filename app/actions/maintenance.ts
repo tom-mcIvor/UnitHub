@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { maintenanceRequestSchema } from '@/lib/schemas'
 import type { MaintenanceRequest } from '@/lib/types'
 
 // Extended type with tenant info for display
@@ -111,24 +112,22 @@ export async function createMaintenanceRequest(formData: FormData): Promise<{
   try {
     const supabase = await createClient()
 
-    // Extract and validate required fields
-    const tenantId = formData.get('tenantId') as string
-    const title = formData.get('title') as string
-    const description = formData.get('description') as string
-    const category = formData.get('category') as string
-    const priority = formData.get('priority') as string
-    const status = formData.get('status') as string
-    const estimatedCost = formData.get('estimatedCost') as string
-    const actualCost = formData.get('actualCost') as string
-    const assignedVendor = formData.get('assignedVendor') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = maintenanceRequestSchema.safeParse({
+      ...rawData,
+      estimatedCost: parseFloat(rawData.estimatedCost as string),
+    })
 
-    if (!tenantId || !title || !description || !category || !priority) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, title, description, category, priority, estimatedCost, assignedVendor } = parsed.data
 
     // Insert into database
     const { data, error } = await supabase
@@ -139,9 +138,8 @@ export async function createMaintenanceRequest(formData: FormData): Promise<{
         description,
         category,
         priority,
-        status: status || 'open',
-        estimated_cost: estimatedCost ? parseFloat(estimatedCost) : null,
-        actual_cost: actualCost ? parseFloat(actualCost) : null,
+        status: 'open',
+        estimated_cost: estimatedCost || null,
         assigned_vendor: assignedVendor || null,
         photos: [],
       })
@@ -187,24 +185,22 @@ export async function updateMaintenanceRequest(
   try {
     const supabase = await createClient()
 
-    // Extract fields
-    const tenantId = formData.get('tenantId') as string
-    const title = formData.get('title') as string
-    const description = formData.get('description') as string
-    const category = formData.get('category') as string
-    const priority = formData.get('priority') as string
-    const status = formData.get('status') as string
-    const estimatedCost = formData.get('estimatedCost') as string
-    const actualCost = formData.get('actualCost') as string
-    const assignedVendor = formData.get('assignedVendor') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = maintenanceRequestSchema.safeParse({
+      ...rawData,
+      estimatedCost: parseFloat(rawData.estimatedCost as string),
+    })
 
-    if (!tenantId || !title || !description || !category || !priority) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, title, description, category, priority, estimatedCost, assignedVendor } = parsed.data
 
     // Update in database
     const { data, error } = await supabase
@@ -215,9 +211,8 @@ export async function updateMaintenanceRequest(
         description,
         category,
         priority,
-        status: status || 'open',
-        estimated_cost: estimatedCost ? parseFloat(estimatedCost) : null,
-        actual_cost: actualCost ? parseFloat(actualCost) : null,
+        status: 'open',
+        estimated_cost: estimatedCost || null,
         assigned_vendor: assignedVendor || null,
         updated_at: new Date().toISOString(),
       })

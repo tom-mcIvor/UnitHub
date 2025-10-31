@@ -1,4 +1,5 @@
 import { getCommunicationLogs, getCommunicationLog, createCommunicationLog, updateCommunicationLog, deleteCommunicationLog } from '@/app/actions/communications'
+import { communicationLogSchema } from '@/lib/schemas'
 
 // Mock Supabase
 jest.mock('@/lib/supabase/server', () => ({
@@ -105,9 +106,12 @@ describe('Communication Log Server Actions', () => {
       // Missing required fields
 
       const result = await createCommunicationLog(formData)
+      const parsed = communicationLogSchema.safeParse(Object.fromEntries(formData))
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Missing required fields')
+      if (!parsed.success) {
+        expect(result.error).toBe(parsed.error.errors.map((e) => e.message).join('\n'))
+      }
       expect(result.data).toBe(null)
     })
   })

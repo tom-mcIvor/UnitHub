@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { documentMetadataSchema } from '@/lib/schemas'
 import type { Document } from '@/lib/types'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -109,20 +110,20 @@ export async function createDocument(formData: FormData): Promise<{
   try {
     const supabase = await createClient()
 
-    // Extract and validate required fields
-    const tenantId = formData.get('tenantId') as string
-    const title = formData.get('title') as string
-    const type = formData.get('type') as string
-    const fileUrl = formData.get('fileUrl') as string
-    const storagePath = formData.get('storagePath') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = documentMetadataSchema.safeParse(rawData)
 
-    if (!title || !type || !fileUrl || !storagePath) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, title, type, fileUrl } = parsed.data
+    const storagePath = formData.get('storagePath') as string
 
     // Insert into database
     const { data, error } = await supabase
@@ -177,20 +178,20 @@ export async function updateDocument(
   try {
     const supabase = await createClient()
 
-    // Extract fields
-    const tenantId = formData.get('tenantId') as string
-    const title = formData.get('title') as string
-    const type = formData.get('type') as string
-    const fileUrl = formData.get('fileUrl') as string
-    const storagePath = formData.get('storagePath') as string | null
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = documentMetadataSchema.safeParse(rawData)
 
-    if (!title || !type || !fileUrl) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, title, type, fileUrl } = parsed.data
+    const storagePath = formData.get('storagePath') as string | null
 
     // Update in database
     const updatePayload: Record<string, unknown> = {

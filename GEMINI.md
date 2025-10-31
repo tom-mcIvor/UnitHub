@@ -1,4 +1,5 @@
 read the docs
+> ⚠️ **IMPORTANT**: Always read relevant documentation before starting any task.
 
 # UnitHub Project Key Points
 

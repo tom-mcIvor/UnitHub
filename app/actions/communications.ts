@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { communicationLogSchema } from '@/lib/schemas'
 import type { CommunicationLog } from '@/lib/types'
 
 // Extended type with tenant info for display
@@ -104,19 +105,19 @@ export async function createCommunicationLog(formData: FormData): Promise<{
   try {
     const supabase = await createClient()
 
-    // Extract and validate required fields
-    const tenantId = formData.get('tenantId') as string
-    const type = formData.get('type') as string
-    const subject = formData.get('subject') as string
-    const content = formData.get('content') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = communicationLogSchema.safeParse(rawData)
 
-    if (!tenantId || !type || !subject || !content) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, type, subject, content } = parsed.data
 
     // Insert into database
     const { data, error } = await supabase
@@ -169,19 +170,19 @@ export async function updateCommunicationLog(
   try {
     const supabase = await createClient()
 
-    // Extract fields
-    const tenantId = formData.get('tenantId') as string
-    const type = formData.get('type') as string
-    const subject = formData.get('subject') as string
-    const content = formData.get('content') as string
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = communicationLogSchema.safeParse(rawData)
 
-    if (!tenantId || !type || !subject || !content) {
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
       return {
         success: false,
-        error: 'Missing required fields',
+        error: errorString,
         data: null,
       }
     }
+
+    const { tenantId, type, subject, content } = parsed.data
 
     // Update in database
     const { data, error } = await supabase

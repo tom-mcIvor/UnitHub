@@ -42,7 +42,7 @@ export const communicationLogSchema = z.object({
 export const documentMetadataSchema = z.object({
   tenantId: z.union([z.string().min(1, "Tenant is required"), z.literal(""), z.undefined()]).optional(),
   title: z.string().min(1, "Title is required"),
-  type: z.enum(["lease", "inspection", "photo", "other"]),
+  type: z.enum(["lease", "inspection", "photo", "insurance", "other"]),
   fileUrl: z.string().min(1, "File URL is required"),
 })
 

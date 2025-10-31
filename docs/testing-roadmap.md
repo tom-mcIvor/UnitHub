@@ -10,13 +10,13 @@
 
 ## 📊 Current Status
 
-**Overall Coverage**: 26.72%
-- **Server Actions**: ~71.75% ✅ (dashboard actions now covered)
+**Overall Coverage**: 26.72% (but test runner is crashing)
+- **Server Actions**: ~71.75% ✅ (but many tests are failing)
 - **Components**: 0% tracked ⚠️ (RTL suites exist but coverage tooling still ignores them)
-- **Pages**: 0% ❌
-- **API Routes**: 100% ✅ (AI categorize/extract/reminder/suggest routes)
+- **Pages**: In Progress ✅ (but many tests are failing)
+- **API Routes**: 100% ✅ (but many tests are failing)
 
-**Total Tests**: 115 passing
+**Total Tests**: 132 (but many are failing)
 
 ### ✅ Completed
 - [x] Jest & RTL setup
@@ -25,10 +25,13 @@
 - [x] Test documentation
 - [x] Co-located test structure
 - [x] AI API route tests (categorize, extract lease, reminder, suggest vendor)
+- [x] Page component tests (tenants, rent, maintenance, communications, documents, settings)
 
 ### 🚧 In Progress
+- [ ] Fix all failing tests
+- [ ] Fix test runner crash
 - [ ] Fix component coverage tracking
-- [ ] Add page component tests
+- [ ] Debug maintenance form test
 
 ### ❌ Not Started
 - [ ] Integration tests
@@ -993,15 +996,15 @@ Use this checklist to track progress:
 - [ ] Test API route: Documents download proxy
 - [ ] Test server actions: Documents (storage path & cleanup)
 - [ ] Test page: Dashboard
-- [ ] Test page: Tenants
-- [ ] Test page: Rent
-- [ ] Test page: Maintenance
-- [ ] Test page: Communications
-- [ ] Test page: Documents
-- [ ] Test page: Settings
+- [x] Test page: Tenants
+- [x] Test page: Rent
+- [x] Test page: Maintenance
+- [x] Test page: Communications
+- [x] Test page: Documents
+- [x] Test page: Settings
 - [ ] Test page: Tenant Detail
 - [ ] Test page: Maintenance Detail
-- [ ] Test component: MaintenanceForm
+- [x] Test component: MaintenanceForm
 - [ ] Test component: MaintenancePage
 - [ ] Test component: MaintenanceDetail
 - [ ] Test component: AICategorization

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { tenantSchema } from '@/lib/schemas'
 import type { Tenant } from '@/lib/types'
 
 // Convert database snake_case to TypeScript camelCase
@@ -70,33 +71,143 @@ export async function getTenant(id: string): Promise<{ data: Tenant | null; erro
   }
 }
 
-// Create a new tenant
 export async function createTenant(formData: FormData): Promise<{ success: boolean; error: string | null; data?: Tenant }> {
   try {
     const supabase = await createClient()
 
-    // Extract form data
-    const tenantData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      unit_number: formData.get('unitNumber') as string,
-      lease_start_date: formData.get('leaseStartDate') as string,
-      lease_end_date: formData.get('leaseEndDate') as string,
-      rent_amount: parseFloat(formData.get('rentAmount') as string),
-      deposit_amount: parseFloat(formData.get('depositAmount') as string),
-      pet_policy: formData.get('petPolicy') as string,
-      notes: formData.get('notes') as string || '',
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = tenantSchema.safeParse({
+      ...rawData,
+      rentAmount: parseFloat(rawData.rentAmount as string),
+      depositAmount: parseFloat(rawData.depositAmount as string),
+    })
+
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
+      return {
+        success: false,
+        error: errorString,
+      }
     }
 
-    // Validate required fields
-    if (!tenantData.name || !tenantData.email || !tenantData.phone || !tenantData.unit_number) {
-      return { success: false, error: 'Missing required fields' }
-    }
+    const { name, email, phone, unitNumber, leaseStartDate, leaseEndDate, rentAmount, depositAmount, petPolicy, notes } = parsed.data
 
     const { data, error } = await supabase
       .from('tenants')
-      .insert([tenantData])
+      .insert([
+        {
+          name,
+          email,
+          phone,
+          unit_number: unitNumber,
+          lease_start_date: leaseStartDate,
+          lease_end_date: leaseEndDate,
+          rent_amount: rentAmount,
+          deposit_amount: depositAmount,
+          pet_policy: petPolicy || '',
+          notes: notes || '',
+        },
+      ])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating tenant:', error)
+      return { success: false, error: error.message }
+    }
+
+    // Revalidate the tenants page to show new data
+    revalidatePath('/tenants')
+
+    const tenant = mapDbToTenant(data)
+    return { success: true, error: null, data: tenant }
+  } catch (error) {
+    console.error('Unexpected error creating tenant:', error)
+    return { success: false, error: 'Failed to create tenant' }
+  }
+}
+    const parsed = tenantSchema.safeParse({
+      ...rawData,
+      rentAmount: parseFloat(rawData.rentAmount as string),
+      depositAmount: parseFloat(rawData.depositAmount as string),
+    })
+
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
+      return {
+        success: false,
+        error: errorString,
+      }
+    }
+
+    const { name, email, phone, unitNumber, leaseStartDate, leaseEndDate, rentAmount, depositAmount, petPolicy, notes } = parsed.data
+
+    const { data, error } = await supabase
+      .from('tenants')
+      .insert([
+        {
+          name,
+          email,
+          phone,
+          unit_number: unitNumber,
+          lease_start_date: leaseStartDate,
+          lease_end_date: leaseEndDate,
+          rent_amount: rentAmount,
+          deposit_amount: depositAmount,
+          pet_policy: petPolicy || '',
+          notes: notes || '',
+        },
+      ])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating tenant:', error)
+      return { success: false, error: error.message }
+    }
+
+    // Revalidate the tenants page to show new data
+    revalidatePath('/tenants')
+
+    const tenant = mapDbToTenant(data)
+    return { success: true, error: null, data: tenant }
+  } catch (error) {
+    console.error('Unexpected error creating tenant:', error)
+    return { success: false, error: 'Failed to create tenant' }
+  }
+}
+    const parsed = tenantSchema.safeParse({
+      ...rawData,
+      rentAmount: parseFloat(rawData.rentAmount as string),
+      depositAmount: parseFloat(rawData.depositAmount as string),
+    })
+
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
+      return {
+        success: false,
+        error: errorString,
+      }
+    }
+
+    const { name, email, phone, unitNumber, leaseStartDate, leaseEndDate, rentAmount, depositAmount, petPolicy, notes } = parsed.data
+
+    const { data, error } = await supabase
+      .from('tenants')
+      .insert([
+        {
+          name,
+          email,
+          phone,
+          unit_number: unitNumber,
+          lease_start_date: leaseStartDate,
+          lease_end_date: leaseEndDate,
+          rent_amount: rentAmount,
+          deposit_amount: depositAmount,
+          pet_policy: petPolicy || '',
+          notes: notes || '',
+        },
+      ])
       .select()
       .single()
 
@@ -121,24 +232,38 @@ export async function updateTenant(id: string, formData: FormData): Promise<{ su
   try {
     const supabase = await createClient()
 
-    // Extract form data
-    const tenantData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      unit_number: formData.get('unitNumber') as string,
-      lease_start_date: formData.get('leaseStartDate') as string,
-      lease_end_date: formData.get('leaseEndDate') as string,
-      rent_amount: parseFloat(formData.get('rentAmount') as string),
-      deposit_amount: parseFloat(formData.get('depositAmount') as string),
-      pet_policy: formData.get('petPolicy') as string,
-      notes: formData.get('notes') as string || '',
-      updated_at: new Date().toISOString(),
+    const rawData = Object.fromEntries(formData.entries())
+    const parsed = tenantSchema.safeParse({
+      ...rawData,
+      rentAmount: parseFloat(rawData.rentAmount as string),
+      depositAmount: parseFloat(rawData.depositAmount as string),
+    })
+
+    if (!parsed.success) {
+      const errorString = parsed.error.errors.map((e) => e.message).join('\n')
+      return {
+        success: false,
+        error: errorString,
+      }
     }
+
+    const { name, email, phone, unitNumber, leaseStartDate, leaseEndDate, rentAmount, depositAmount, petPolicy, notes } = parsed.data
 
     const { data, error } = await supabase
       .from('tenants')
-      .update(tenantData)
+      .update({
+        name,
+        email,
+        phone,
+        unit_number: unitNumber,
+        lease_start_date: leaseStartDate,
+        lease_end_date: leaseEndDate,
+        rent_amount: rentAmount,
+        deposit_amount: depositAmount,
+        pet_policy: petPolicy || '',
+        notes: notes || '',
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', id)
       .select()
       .single()

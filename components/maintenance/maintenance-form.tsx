@@ -18,6 +18,7 @@ interface MaintenanceFormProps {
   tenants?: Tenant[]
   editingRequest?: MaintenanceRequestWithTenant
   initialData?: MaintenanceRequestFormData
+  createMaintenanceRequest?: (formData: FormData) => Promise<{ success: boolean; error: string | null; data: MaintenanceRequest | null }>
 }
 
 export function MaintenanceForm({ onClose, tenants = [], editingRequest, initialData }: MaintenanceFormProps) {
@@ -37,6 +38,8 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
   })
 
   const onSubmit = async (data: MaintenanceRequestFormData) => {
+    console.log("Form data:", data);
+    console.log("Form data:", data);
     setIsSubmitting(true)
     setError(null)
     setSuccess(false)
@@ -62,12 +65,14 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
         : await createMaintenanceRequest(formData)
 
       if (result.success) {
+        console.log("Submission successful");
         setSuccess(true)
         router.refresh()
         setTimeout(() => {
           onClose()
         }, 1000)
       } else {
+        console.error("Submission failed:", result.error);
         setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} maintenance request`)
       }
     } finally {
@@ -85,7 +90,7 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4" data-testid="maintenance-form">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700 text-sm">{error}</p>
@@ -100,8 +105,9 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Tenant *</label>
+              <label htmlFor="tenantId" className="block text-sm font-medium text-text mb-2">Tenant *</label>
               <select
+                id="tenantId"
                 {...register("tenantId")}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
@@ -116,8 +122,9 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Category *</label>
+              <label htmlFor="category" className="block text-sm font-medium text-text mb-2">Category *</label>
               <select
+                id="category"
                 {...register("category")}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
@@ -135,14 +142,15 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Title *</label>
-            <Input {...register("title")} placeholder="Brief description of the issue" />
+            <label htmlFor="title" className="block text-sm font-medium text-text mb-2">Title *</label>
+            <Input id="title" {...register("title")} placeholder="Brief description of the issue" />
             {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Description *</label>
+            <label htmlFor="description" className="block text-sm font-medium text-text mb-2">Description *</label>
             <textarea
+              id="description"
               {...register("description")}
               placeholder="Detailed description of the maintenance issue..."
               className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -153,8 +161,9 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Priority *</label>
+              <label htmlFor="priority" className="block text-sm font-medium text-text mb-2">Priority *</label>
               <select
+                id="priority"
                 {...register("priority")}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               >
@@ -167,14 +176,14 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Estimated Cost</label>
-              <Input {...register("estimatedCost", { valueAsNumber: true })} type="number" placeholder="0.00" />
+              <label htmlFor="estimatedCost" className="block text-sm font-medium text-text mb-2">Estimated Cost</label>
+              <Input id="estimatedCost" {...register("estimatedCost", { valueAsNumber: true })} type="number" placeholder="0.00" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Assigned Vendor</label>
-            <Input {...register("assignedVendor")} placeholder="Vendor name (optional)" />
+            <label htmlFor="assignedVendor" className="block text-sm font-medium text-text mb-2">Assigned Vendor</label>
+            <Input id="assignedVendor" {...register("assignedVendor")} placeholder="Vendor name (optional)" />
           </div>
 
           <div className="flex gap-3 justify-end pt-4">

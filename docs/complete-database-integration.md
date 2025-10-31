@@ -78,55 +78,112 @@ Added `export const dynamic = 'force-dynamic'` to all database-dependent pages t
 
 ---
 
-## Problems That Still Exist
+## What Was Implemented
 
-### 1. Update and Delete Operations Not Implemented
-**Location**: All list/table components
-**Issue**: Edit and Delete buttons exist in UI but have no onClick handlers or functionality.
+### Server Actions Created
+Created four new server action files following the pattern established in `/app/actions/tenants.ts`:
+
+1. **`/app/actions/rent.ts`** (267 lines)
+   - `getRentPayments()` - Fetches all rent_payments with JOIN to tenants table
+   - `getRentPayment(id)` - Fetches single payment by UUID
+   - `createRentPayment(formData)` - Inserts new payment record
+   - `updateRentPayment(id, formData)` - Updates existing payment
+   - `deleteRentPayment(id)` - Deletes payment by UUID
+   - Returns `RentPaymentWithTenant` type (includes tenantName, unitNumber)
+
+2. **`/app/actions/maintenance.ts`** (285 lines)
+   - `getMaintenanceRequests()` - Fetches all maintenance_requests with JOIN
+   - `getMaintenanceRequest(id)` - Fetches single request
+   - `createMaintenanceRequest(formData)` - Inserts new request
+   - `updateMaintenanceRequest(id, formData)` - Updates request
+   - `deleteMaintenanceRequest(id)` - Deletes request
+   - Returns `MaintenanceRequestWithTenant` type
+
+3. **`/app/actions/documents.ts`** (246 lines)
+   - `getDocuments()` - Fetches all documents with optional JOIN to tenants
+   - `getDocument(id)` - Fetches single document
+   - `createDocument(formData)` - Inserts document metadata (no file upload)
+   - `updateDocument(id, formData)` - Updates document metadata
+   - `deleteDocument(id)` - Deletes document record
+   - Returns `DocumentWithTenant` type (tenantName/unitNumber optional)
+
+4. **`/app/actions/communications.ts`** (239 lines)
+   - `getCommunicationLogs()` - Fetches all communication_logs with JOIN
+   - `getCommunicationLog(id)` - Fetches single log
+   - `createCommunicationLog(formData)` - Inserts new log
+   - `updateCommunicationLog(id, formData)` - Updates log
+   - `deleteCommunicationLog(id)` - Deletes log
+   - Returns `CommunicationLogWithTenant` type
+
+### Pages Converted to Server Components
+Modified five page components to fetch data server-side:
+
+- `/app/rent/page.tsx` - Added `getRentPayments()` and `getTenants()` calls
+- `/app/maintenance/page.tsx` - Added `getMaintenanceRequests()` and `getTenants()`
+- `/app/documents/page.tsx` - Added `getDocuments()` and `getTenants()`
+- `/app/communications/page.tsx` - Added `getCommunicationLogs()` and `getTenants()`
+- `/app/tenants/page.tsx` - Added `export const dynamic = 'force-dynamic'`
+
+All pages pass `initialData`, `tenants`, and `error` props to client components.
+
+### Client Components Updated
+Modified eight client components to accept database props:
+
+**Page Components**:
+- `/components/rent/rent-tracking-page.tsx` - Removed mock data (lines 17-62 deleted)
+- `/components/maintenance/maintenance-page.tsx` - Removed mock data (lines 18-79 deleted)
+- `/components/documents/documents-page.tsx` - Removed mock data (lines 18-73 deleted)
+- `/components/communications/communications-page.tsx` - Removed mock data (lines 16-67 deleted)
+
+**Form Components**:
+- `/components/rent/rent-payment-form.tsx` - Added `createRentPayment()` integration, tenant dropdown uses real data
+- `/components/maintenance/maintenance-form.tsx` - Added `createMaintenanceRequest()` integration, tenant dropdown uses real data
+- `/components/communications/communication-form.tsx` - Added `createCommunicationLog()` integration, tenant dropdown uses real data
+
+All forms now:
+- Accept `tenants: Tenant[]` prop
+- Show error/success messages
+- Call `router.refresh()` after save
+- Auto-close modal 1 second after success
+
+### Dynamic Rendering Configuration
+Added `export const dynamic = 'force-dynamic'` to all database-dependent pages to prevent static generation errors during build.
+
+### Server-Side Validation
+
+**Location**: All server action files (`/app/actions/*.ts`)
+
+**Description**:
+
+Implemented server-side validation for all `create` and `update` operations using Zod schemas from `/lib/schemas.ts`. This ensures data integrity and prevents invalid data from being saved to the database.
 
 **Affected Files**:
-- `/components/tenants/tenants-list.tsx:106-111` - Edit/Delete buttons not wired
-- `/components/rent/rent-tracking-page.tsx` - No edit/delete UI for payments
-- `/components/maintenance/maintenance-page.tsx` - No edit/delete UI for requests
-- `/components/documents/documents-page.tsx` - No delete UI for documents
-- `/components/communications/communications-page.tsx` - No delete UI for logs
+- `/app/actions/tenants.ts`
+- `/app/actions/rent.ts`
+- `/app/actions/maintenance.ts`
+- `/app/actions/documents.ts`
+- `/app/actions/communications.ts`
 
-**Related Server Actions** (exist but unused):
-- `/app/actions/tenants.ts:122-156` - `updateTenant()` not called
-- `/app/actions/tenants.ts:159-183` - `deleteTenant()` not called
-- `/app/actions/rent.ts:158-217` - `updateRentPayment()` not called
-- `/app/actions/rent.ts:220-247` - `deleteRentPayment()` not called
-- `/app/actions/maintenance.ts:189-252` - `updateMaintenanceRequest()` not called
-- `/app/actions/maintenance.ts:255-282` - `deleteMaintenanceRequest()` not called
-- `/app/actions/documents.ts:150-202` - `updateDocument()` not called
-- `/app/actions/documents.ts:205-229` - `deleteDocument()` not called
-- `/app/actions/communications.ts:145-197` - `updateCommunicationLog()` not called
-- `/app/actions/communications.ts:200-224` - `deleteCommunicationLog()` not called
+### Loading States
 
-**Suggested Solutions**:
-- Add `handleDelete` function in page components that calls delete server action
-- Add confirmation dialog before delete (could use shadcn/ui AlertDialog)
-- For edit: Add `editingId` state and pass to form component
-- Forms need `initialData` prop to distinguish create vs update mode
-- Pass record ID to form for update operations
+**Location**: All main feature pages (`/app/[feature]/loading.tsx`)
 
-### 2. File Upload Not Implemented
-**Location**: `/components/documents/document-upload.tsx`
-**Issue**: Form exists but does not upload files to Supabase Storage.
+**Description**:
 
-**Current State**:
-- Form has TODO comment for API call
-- `createDocument()` expects `fileUrl` but no mechanism to generate it
-- Database schema has `file_url` column (TEXT)
+Added `loading.tsx` files for all main feature pages to provide visual feedback to the user while data is being fetched from the database. This improves the user experience by using Next.js's built-in support for loading UI.
 
-**Suggested Solutions**:
-- Create Supabase Storage bucket in dashboard
-- Add file upload in `document-upload.tsx` using `supabase.storage.from('bucket').upload()`
-- Get public URL after upload: `supabase.storage.from('bucket').getPublicUrl()`
-- Pass file URL to `createDocument()`
-- Consider adding file size/type validation
+**Files Created**:
+- `/app/tenants/loading.tsx`
+- `/app/rent/loading.tsx`
+- `/app/maintenance/loading.tsx`
+- `/app/documents/loading.tsx`
+- `/app/communications/loading.tsx`
 
-### 4. No Authentication System
+---
+
+## Problems That Still Exist
+
+### 1. No Authentication System
 **Location**: All pages and server actions
 **Issue**: No user sessions, anyone can access all data.
 
@@ -143,40 +200,7 @@ Added `export const dynamic = 'force-dynamic'` to all database-dependent pages t
 - Add RLS policies: `WHERE user_id = auth.uid()`
 - Create login/signup pages using Supabase Auth
 
-### 5. Dashboard Shows Hardcoded Stats
-**Location**: `/app/page.tsx` (dashboard)
-**Issue**: Dashboard not updated to fetch real statistics from database.
-
-**Suggested Solutions**:
-- Create server action to aggregate stats (COUNT queries)
-- Fetch stats server-side in dashboard page
-- Pass to dashboard components as props
-
-### 6. No Server-Side Validation
-**Location**: All server actions
-**Issue**: Server actions trust FormData without re-validation.
-
-**Current State**:
-- Client-side validation via Zod in forms
-- Server actions only check for required field presence (if statements)
-- No format validation (email, phone, dates) on server
-
-**Suggested Solutions**:
-- Import Zod schemas from `/lib/schemas.ts` into server actions
-- Parse FormData: `const parsed = schema.parse(Object.fromEntries(formData))`
-- Catch ZodError and return validation errors
-- Located at: `/app/actions/rent.ts:108-116`, `/app/actions/maintenance.ts:125-134`, etc.
-
-### 7. No Loading States
-**Location**: All pages
-**Issue**: Pages show nothing while fetching data from database.
-
-**Suggested Solutions**:
-- Add `/app/[route]/loading.tsx` files with skeleton UI
-- Use Suspense boundaries for granular loading
-- Example: `/app/tenants/loading.tsx` with table skeleton
-
-### 8. Payment Status Not Auto-Updated
+### 2. Payment Status Not Auto-Updated
 **Location**: `/app/actions/rent.ts`
 **Issue**: Rent payments don't automatically change from "pending" to "overdue" based on date.
 
@@ -265,8 +289,6 @@ Added `export const dynamic = 'force-dynamic'` to all database-dependent pages t
 - `communication_logs` - CRUD operations
 
 ## Next Recommended Steps
-1. Wire up edit/delete buttons for all features
-2. Fix tenant and maintenance detail pages
-3. Implement file upload for documents
-4. Add authentication and RLS policies
-5. Connect dashboard to real data
+1.  **Implement Authentication**: Secure the application by adding user authentication and authorization.
+2.  **Automatic Payment Status Updates**: Implement a system to automatically update rent payment statuses.
+3.  **UI/UX Enhancements**: Implement toast notifications and optimistic updates to improve the user experience.

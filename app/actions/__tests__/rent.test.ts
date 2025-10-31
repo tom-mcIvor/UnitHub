@@ -1,4 +1,5 @@
 import { getRentPayments, createRentPayment, updateRentPayment, deleteRentPayment } from '@/app/actions/rent'
+import { rentPaymentSchema } from '@/lib/schemas'
 
 // Mock Supabase
 jest.mock('@/lib/supabase/server', () => ({
@@ -99,9 +100,12 @@ describe('Rent Payment Server Actions', () => {
       // Missing required fields
 
       const result = await createRentPayment(formData)
+      const parsed = rentPaymentSchema.safeParse(Object.fromEntries(formData))
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Missing required fields')
+      if (!parsed.success) {
+        expect(result.error).toBe(parsed.error.errors.map((e) => e.message).join('\n'))
+      }
       expect(result.data).toBe(null)
     })
   })
