@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteDocument } from "@/app/actions/documents"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface DocumentsPageProps {
   initialDocuments: DocumentWithTenant[]
@@ -201,8 +202,26 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                   >
                     <Edit2 size={16} />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1">
-                    <Download size={16} />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1"
+                    asChild
+                    disabled={!doc.storagePath && !doc.fileUrl}
+                  >
+                    {doc.storagePath ? (
+                      <Link
+                        href={`/api/documents/${doc.id}/download`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download size={16} />
+                      </Link>
+                    ) : (
+                      <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                        <Download size={16} />
+                      </a>
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
@@ -234,9 +253,11 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                 </div>
               )}
 
-              <Button variant="outline" className="w-full gap-2 bg-transparent">
-                <Eye size={16} />
-                View
+              <Button asChild variant="outline" className="w-full gap-2 bg-transparent">
+                <Link href={`/documents/${doc.id}`}>
+                  <Eye size={16} />
+                  View
+                </Link>
               </Button>
             </div>
           ))}

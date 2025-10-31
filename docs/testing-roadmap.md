@@ -312,6 +312,28 @@ describe('POST /api/ai/categorize-maintenance', () => {
 
 ---
 
+### 2.1b Test Document Storage Integration
+**Priority**: P0
+**Estimated Time**: 1 day
+
+**Targets**:
+- `app/actions/documents.ts` (create/update/delete flows)
+- `app/api/documents/[id]/download/route.ts`
+
+**Scenarios to Cover**:
+1. `createDocument` persists `storage_path` and returns mapped data.
+2. `updateDocument` keeps the stored path while updating metadata.
+3. `deleteDocument` removes the DB record and invokes the storage client with the expected path (capture/log failures).
+4. Download proxy streams binaries with correct headers (`Content-Type`, `Content-Disposition`, `Cache-Control`).
+5. Download proxy handles missing `storage_path` or Supabase download errors with the right status codes.
+
+**Test Structure**:
+- Add suites under `app/actions/__tests__/documents.test.ts` and `app/api/documents/__tests__/download.test.ts` using the Supabase client mocks in `app/api/ai/test-utils.ts`.
+
+**Expected Coverage**: 85%+ across document actions and the proxy route.
+
+---
+
 ### 2.2 Test Page Components
 **Priority**: P0
 **Estimated Time**: 2 days
@@ -968,6 +990,8 @@ Use this checklist to track progress:
 - [ ] Test AI API: extract-lease
 - [ ] Test AI API: generate-reminder
 - [ ] Test AI API: suggest-vendor
+- [ ] Test API route: Documents download proxy
+- [ ] Test server actions: Documents (storage path & cleanup)
 - [ ] Test page: Dashboard
 - [ ] Test page: Tenants
 - [ ] Test page: Rent
@@ -1004,7 +1028,7 @@ Use this checklist to track progress:
 - [ ] Test workflow: Tenant management
 - [ ] Test workflow: Rent tracking
 - [ ] Test workflow: Maintenance flow
-- [ ] Test workflow: Document management
+- [ ] Test workflow: Document management (upload → proxy download → storage cleanup)
 - [ ] Test data integrity
 
 ### Phase 4: E2E & Advanced

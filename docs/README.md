@@ -23,6 +23,7 @@ The testing roadmap is your complete testing guide containing:
 - **[Testing Best Practices](./testing-best-practices.md)** - Patterns and guidelines for writing tests
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
 - **[Component Test Suite Stabilization](./component-test-suite-stabilization.md)** - Component test fixes history
+- **[Dashboard & Detail Component Testing](./dashboard-and-detail-testing.md)** - Latest dashboard/detail testing work summary
 - **[Additional Server Action Tests](./additional-server-action-tests.md)** - Server action coverage details
 
 ---

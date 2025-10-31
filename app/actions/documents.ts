@@ -3,6 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Document } from '@/lib/types'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ?? 'UnitHubDocuments'
 
 // Extended type with tenant info for display
 export interface DocumentWithTenant extends Document {
@@ -18,6 +21,7 @@ function mapDbToDocument(row: any): Document {
     title: row.title,
     type: row.type,
     fileUrl: row.file_url,
+    storagePath: row.storage_path || undefined,
     uploadedAt: row.uploaded_at,
     extractedData: row.extracted_data || undefined,
   }
@@ -110,8 +114,9 @@ export async function createDocument(formData: FormData): Promise<{
     const title = formData.get('title') as string
     const type = formData.get('type') as string
     const fileUrl = formData.get('fileUrl') as string
+    const storagePath = formData.get('storagePath') as string
 
-    if (!title || !type || !fileUrl) {
+    if (!title || !type || !fileUrl || !storagePath) {
       return {
         success: false,
         error: 'Missing required fields',
@@ -127,6 +132,7 @@ export async function createDocument(formData: FormData): Promise<{
         title,
         type,
         file_url: fileUrl,
+        storage_path: storagePath,
         extracted_data: null,
       })
       .select()
@@ -176,6 +182,7 @@ export async function updateDocument(
     const title = formData.get('title') as string
     const type = formData.get('type') as string
     const fileUrl = formData.get('fileUrl') as string
+    const storagePath = formData.get('storagePath') as string | null
 
     if (!title || !type || !fileUrl) {
       return {
@@ -186,14 +193,20 @@ export async function updateDocument(
     }
 
     // Update in database
+    const updatePayload: Record<string, unknown> = {
+      tenant_id: tenantId || null,
+      title,
+      type,
+      file_url: fileUrl,
+    }
+
+    if (storagePath) {
+      updatePayload.storage_path = storagePath
+    }
+
     const { data, error } = await supabase
       .from('documents')
-      .update({
-        tenant_id: tenantId || null,
-        title,
-        type,
-        file_url: fileUrl,
-      })
+      .update(updatePayload)
       .eq('id', id)
       .select()
       .single()
@@ -233,16 +246,47 @@ export async function deleteDocument(id: string): Promise<{
   try {
     const supabase = await createClient()
 
-    const { error } = await supabase
+    const { data: existing, error: fetchError } = await supabase
+      .from('documents')
+      .select('storage_path')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching document before deletion:', fetchError)
+      return {
+        success: false,
+        error: fetchError.message,
+      }
+    }
+
+    const storagePath: string | undefined = existing?.storage_path || undefined
+
+    const { error: deleteError } = await supabase
       .from('documents')
       .delete()
       .eq('id', id)
 
-    if (error) {
-      console.error('Error deleting document:', error)
+    if (deleteError) {
+      console.error('Error deleting document:', deleteError)
       return {
         success: false,
-        error: error.message,
+        error: deleteError.message,
+      }
+    }
+
+    if (storagePath) {
+      try {
+        const adminClient = createAdminClient()
+        const { error: storageError } = await adminClient.storage
+          .from(STORAGE_BUCKET)
+          .remove([storagePath])
+
+        if (storageError) {
+          console.error('Error deleting document from storage:', storageError)
+        }
+      } catch (storageCleanupError) {
+        console.error('Unexpected error removing storage object:', storageCleanupError)
       }
     }
 

@@ -13,13 +13,14 @@ interface MaintenanceDetailProps {
 
 export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
   const formatDate = (dateString: string) => {
+    if (!dateString) return '—'
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  const formatCost = (amount: string | number | null) => {
-    if (!amount) return null
-    return parseFloat(amount.toString()).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const formatCost = (amount?: number) => {
+    if (amount === undefined || amount === null) return null
+    return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
   const getPriorityColor = (priority: string) => {
@@ -50,6 +51,9 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
     }
   }
 
+  const estimatedCost = formatCost(request.estimatedCost)
+  const actualCost = formatCost(request.actualCost)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -61,7 +65,7 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-text">{request.title}</h1>
-          <p className="text-text-secondary mt-1">Unit {request.tenantUnitNumber || 'N/A'}</p>
+          <p className="text-text-secondary mt-1">Unit {request.unitNumber || 'N/A'}</p>
         </div>
         <Button className="gap-2">
           <Edit2 size={20} />
@@ -105,11 +109,11 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-text-secondary mb-1">Estimated Cost</p>
-                <p className="text-2xl font-bold text-text">{request.estimated_cost ? `$${formatCost(request.estimated_cost)}` : '-'}</p>
+                <p className="text-2xl font-bold text-text">{estimatedCost ? `$${estimatedCost}` : '-'}</p>
               </div>
               <div className="p-4 bg-surface rounded-lg">
                 <p className="text-sm text-text-secondary mb-1">Actual Cost</p>
-                <p className="text-2xl font-bold text-text">{request.actual_cost ? `$${formatCost(request.actual_cost)}` : "-"}</p>
+                <p className="text-2xl font-bold text-text">{actualCost ? `$${actualCost}` : '-'}</p>
               </div>
             </div>
           </Card>
@@ -122,14 +126,14 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
                 <Calendar size={20} className="text-primary" />
                 <div>
                   <p className="text-sm text-text-secondary">Created</p>
-                  <p className="text-text font-medium">{formatDate(request.created_at)}</p>
+                  <p className="text-text font-medium">{formatDate(request.createdAt)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Calendar size={20} className="text-primary" />
                 <div>
                   <p className="text-sm text-text-secondary">Last Updated</p>
-                  <p className="text-text font-medium">{formatDate(request.updated_at)}</p>
+                  <p className="text-text font-medium">{formatDate(request.updatedAt)}</p>
                 </div>
               </div>
             </div>
@@ -148,7 +152,7 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
                 <p className="text-text font-medium">{request.tenantName || 'Unknown'}</p>
               </div>
             </div>
-            <Link href={`/tenants/${request.tenant_id}`}>
+            <Link href={`/tenants/${request.tenantId}`}>
               <Button variant="outline" className="w-full bg-transparent">
                 View Tenant
               </Button>
@@ -167,10 +171,10 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
           {/* Vendor */}
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-text mb-4">Assigned Vendor</h2>
-            {request.assigned_vendor ? (
+            {request.assignedVendor ? (
               <div className="flex items-center gap-3">
                 <User size={20} className="text-primary" />
-                <p className="text-text font-medium">{request.assigned_vendor}</p>
+                <p className="text-text font-medium">{request.assignedVendor}</p>
               </div>
             ) : (
               <p className="text-text-secondary">No vendor assigned</p>

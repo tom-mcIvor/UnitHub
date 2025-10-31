@@ -91,6 +91,7 @@ describe('Document Server Actions', () => {
       formData.append('title', 'Insurance Certificate')
       formData.append('type', 'insurance')
       formData.append('fileUrl', 'https://example.com/insurance.pdf')
+      formData.append('storagePath', 'documents/insurance-certificate.pdf')
 
       const result = await createDocument(formData)
 
@@ -104,6 +105,7 @@ describe('Document Server Actions', () => {
       formData.append('title', 'Property Insurance')
       formData.append('type', 'insurance')
       formData.append('fileUrl', 'https://example.com/property-insurance.pdf')
+      formData.append('storagePath', 'documents/property-insurance.pdf')
 
       const result = await createDocument(formData)
 

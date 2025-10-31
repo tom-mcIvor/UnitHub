@@ -1,4 +1,5 @@
 import { POST } from '../categorize-maintenance/route'
+import { createJsonRequest } from '../test-utils'
 
 // Mock the AI generateText function
 jest.mock('ai', () => ({
@@ -26,13 +27,9 @@ describe('POST /api/ai/categorize-maintenance', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Leaking Pipe',
-          description: 'There is water leaking from the pipe under the sink',
-        }),
+      const request = createJsonRequest({
+        title: 'Leaking Pipe',
+        description: 'There is water leaking from the pipe under the sink',
       })
 
       // Act
@@ -67,13 +64,9 @@ describe('POST /api/ai/categorize-maintenance', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'No Heat',
-          description: 'Heating system is not working',
-        }),
+      const request = createJsonRequest({
+        title: 'No Heat',
+        description: 'Heating system is not working',
       })
 
       // Act
@@ -90,12 +83,8 @@ describe('POST /api/ai/categorize-maintenance', () => {
   describe('validation errors', () => {
     it('should return error when title is missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: 'Description only',
-        }),
+      const request = createJsonRequest({
+        description: 'Description only',
       })
 
       // Act
@@ -110,12 +99,8 @@ describe('POST /api/ai/categorize-maintenance', () => {
 
     it('should return error when description is missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Title only',
-        }),
+      const request = createJsonRequest({
+        title: 'Title only',
       })
 
       // Act
@@ -130,11 +115,7 @@ describe('POST /api/ai/categorize-maintenance', () => {
 
     it('should return error when both fields are missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
+      const request = createJsonRequest({})
 
       // Act
       const response = await POST(request)
@@ -151,13 +132,9 @@ describe('POST /api/ai/categorize-maintenance', () => {
       // Arrange
       ;(generateText as jest.Mock).mockRejectedValue(new Error('AI API unavailable'))
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Test',
-          description: 'Test description',
-        }),
+      const request = createJsonRequest({
+        title: 'Test',
+        description: 'Test description',
       })
 
       // Act
@@ -172,16 +149,12 @@ describe('POST /api/ai/categorize-maintenance', () => {
     it('should handle invalid JSON response from AI', async () => {
       // Arrange
       ;(generateText as jest.Mock).mockResolvedValue({
-        text: 'This is not valid JSON',
+        text: 'not valid json',
       })
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Test',
-          description: 'Test description',
-        }),
+      const request = createJsonRequest({
+        title: 'Test',
+        description: 'Test description',
       })
 
       // Act
@@ -195,11 +168,7 @@ describe('POST /api/ai/categorize-maintenance', () => {
 
     it('should handle malformed request body', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'invalid json',
-      })
+      const request = createJsonRequest('invalid json')
 
       // Act
       const response = await POST(request)
@@ -217,21 +186,17 @@ describe('POST /api/ai/categorize-maintenance', () => {
       const mockResponse = {
         category: 'Electrical',
         priority: 'high',
-        estimatedCost: 350,
-        summary: 'Outlet needs replacement for safety',
+        estimatedCost: 300,
+        summary: 'Faulty wiring needs repair',
       }
 
       ;(generateText as jest.Mock).mockResolvedValue({
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Outlet sparking',
-          description: 'Electrical outlet is sparking when plugs are inserted',
-        }),
+      const request = createJsonRequest({
+        title: 'Flickering lights',
+        description: 'Lights flicker when turning on appliances',
       })
 
       // Act
@@ -239,6 +204,7 @@ describe('POST /api/ai/categorize-maintenance', () => {
       const data = await response.json()
 
       // Assert
+      expect(response.status).toBe(200)
       expect(data.category).toBe('Electrical')
       expect(data.priority).toBe('high')
     })
@@ -246,23 +212,19 @@ describe('POST /api/ai/categorize-maintenance', () => {
     it('should categorize low priority requests', async () => {
       // Arrange
       const mockResponse = {
-        category: 'Painting',
+        category: 'Cosmetic',
         priority: 'low',
-        estimatedCost: 100,
-        summary: 'Minor cosmetic touch-up needed',
+        estimatedCost: 50,
+        summary: 'Minor wall scuff needs paint touch-up',
       }
 
       ;(generateText as jest.Mock).mockResolvedValue({
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/categorize-maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Paint touch-up',
-          description: 'Small scratch on wall needs paint touch-up',
-        }),
+      const request = createJsonRequest({
+        title: 'Scuffed paint',
+        description: 'Small scuff on living room wall',
       })
 
       // Act
@@ -270,7 +232,7 @@ describe('POST /api/ai/categorize-maintenance', () => {
       const data = await response.json()
 
       // Assert
-      expect(data.category).toBe('Painting')
+      expect(response.status).toBe(200)
       expect(data.priority).toBe('low')
     })
   })

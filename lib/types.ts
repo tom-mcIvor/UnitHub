@@ -52,6 +52,7 @@ export interface Document {
   title: string
   type: "lease" | "inspection" | "photo" | "other"
   fileUrl: string
+  storagePath?: string
   uploadedAt: string
   extractedData?: Record<string, unknown>
 }

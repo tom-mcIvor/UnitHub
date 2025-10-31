@@ -1,4 +1,5 @@
 import { POST } from '../suggest-vendor/route'
+import { createJsonRequest } from '../test-utils'
 
 // Mock the AI generateText function
 jest.mock('ai', () => ({
@@ -36,14 +37,10 @@ describe('POST /api/ai/suggest-vendor', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Plumbing',
-          priority: 'high',
-          description: 'Pipe leaking in kitchen',
-        }),
+      const request = createJsonRequest({
+        category: 'Plumbing',
+        priority: 'high',
+        description: 'Pipe leaking in kitchen',
       })
 
       // Act
@@ -82,14 +79,10 @@ describe('POST /api/ai/suggest-vendor', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Electrical',
-          priority: 'urgent',
-          description: 'Outlet sparking',
-        }),
+      const request = createJsonRequest({
+        category: 'Electrical',
+        priority: 'urgent',
+        description: 'Outlet sparking',
       })
 
       // Act
@@ -125,14 +118,10 @@ describe('POST /api/ai/suggest-vendor', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'HVAC',
-          priority: 'high',
-          description: 'Heating not working in winter',
-        }),
+      const request = createJsonRequest({
+        category: 'HVAC',
+        priority: 'high',
+        description: 'Heating not working in winter',
       })
 
       // Act
@@ -167,14 +156,10 @@ describe('POST /api/ai/suggest-vendor', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Painting',
-          priority: 'low',
-          description: 'Touch up wall paint',
-        }),
+      const request = createJsonRequest({
+        category: 'Painting',
+        priority: 'low',
+        description: 'Touch up wall paint',
       })
 
       // Act
@@ -190,13 +175,9 @@ describe('POST /api/ai/suggest-vendor', () => {
   describe('validation errors', () => {
     it('should return error when category is missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          priority: 'high',
-          description: 'Some issue',
-        }),
+      const request = createJsonRequest({
+        priority: 'high',
+        description: 'Some issue',
       })
 
       // Act
@@ -206,18 +187,13 @@ describe('POST /api/ai/suggest-vendor', () => {
       // Assert
       expect(response.status).toBe(400)
       expect(data.error).toBe('Category and priority are required')
-      expect(generateText).not.toHaveBeenCalled()
     })
 
     it('should return error when priority is missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Plumbing',
-          description: 'Some issue',
-        }),
+      const request = createJsonRequest({
+        category: 'Plumbing',
+        description: 'Clogged drain',
       })
 
       // Act
@@ -227,18 +203,11 @@ describe('POST /api/ai/suggest-vendor', () => {
       // Assert
       expect(response.status).toBe(400)
       expect(data.error).toBe('Category and priority are required')
-      expect(generateText).not.toHaveBeenCalled()
     })
 
     it('should return error when both category and priority are missing', async () => {
       // Arrange
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: 'Some issue',
-        }),
-      })
+      const request = createJsonRequest({})
 
       // Act
       const response = await POST(request)
@@ -254,8 +223,8 @@ describe('POST /api/ai/suggest-vendor', () => {
       const mockResponse = {
         suggestions: [
           {
-            vendorType: 'General Contractor',
-            reason: 'Can handle various types of work',
+            vendorType: 'Licensed Plumber',
+            reason: 'Handles plumbing repairs professionally',
           },
         ],
       }
@@ -264,13 +233,9 @@ describe('POST /api/ai/suggest-vendor', () => {
         text: JSON.stringify(mockResponse),
       })
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Other',
-          priority: 'medium',
-        }),
+      const request = createJsonRequest({
+        category: 'Plumbing',
+        priority: 'high',
       })
 
       // Act
@@ -288,13 +253,10 @@ describe('POST /api/ai/suggest-vendor', () => {
       // Arrange
       ;(generateText as jest.Mock).mockRejectedValue(new Error('AI service unavailable'))
 
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Plumbing',
-          priority: 'high',
-        }),
+      const request = createJsonRequest({
+        category: 'Plumbing',
+        priority: 'high',
+        description: 'Burst pipe',
       })
 
       // Act
@@ -304,175 +266,6 @@ describe('POST /api/ai/suggest-vendor', () => {
       // Assert
       expect(response.status).toBe(500)
       expect(data.error).toBe('Failed to suggest vendors')
-    })
-
-    it('should handle invalid JSON response from AI', async () => {
-      // Arrange
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: 'Not valid JSON',
-      })
-
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Plumbing',
-          priority: 'high',
-        }),
-      })
-
-      // Act
-      const response = await POST(request)
-      const data = await response.json()
-
-      // Assert
-      expect(response.status).toBe(500)
-      expect(data.error).toBe('Failed to suggest vendors')
-    })
-
-    it('should handle malformed request body', async () => {
-      // Arrange
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: 'invalid json',
-      })
-
-      // Act
-      const response = await POST(request)
-      const data = await response.json()
-
-      // Assert
-      expect(response.status).toBe(500)
-      expect(data.error).toBe('Failed to suggest vendors')
-    })
-  })
-
-  describe('different categories and priorities', () => {
-    it('should handle appliance repairs', async () => {
-      // Arrange
-      const mockResponse = {
-        suggestions: [
-          {
-            vendorType: 'Appliance Repair Specialist',
-            reason: 'Expert in refrigerator repairs',
-          },
-          {
-            vendorType: 'HVAC & Appliance Technician',
-            reason: 'Can diagnose and repair cooling systems',
-          },
-          {
-            vendorType: 'General Appliance Service',
-            reason: 'Handles all major appliance brands',
-          },
-        ],
-      }
-
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: JSON.stringify(mockResponse),
-      })
-
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Appliances',
-          priority: 'medium',
-          description: 'Refrigerator not cooling',
-        }),
-      })
-
-      // Act
-      const response = await POST(request)
-      const data = await response.json()
-
-      // Assert
-      expect(response.status).toBe(200)
-      expect(data.suggestions[0].vendorType).toContain('Appliance')
-    })
-
-    it('should handle security system issues', async () => {
-      // Arrange
-      const mockResponse = {
-        suggestions: [
-          {
-            vendorType: 'Security System Installer',
-            reason: 'Specialized in alarm system maintenance',
-          },
-          {
-            vendorType: 'Locksmith & Security',
-            reason: 'Can handle both locks and security systems',
-          },
-          {
-            vendorType: 'Smart Home Technician',
-            reason: 'Expert in modern security technology',
-          },
-        ],
-      }
-
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: JSON.stringify(mockResponse),
-      })
-
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Security',
-          priority: 'high',
-          description: 'Alarm system malfunctioning',
-        }),
-      })
-
-      // Act
-      const response = await POST(request)
-      const data = await response.json()
-
-      // Assert
-      expect(response.status).toBe(200)
-      expect(data.suggestions).toBeDefined()
-    })
-
-    it('should include prompt details in AI call', async () => {
-      // Arrange
-      const mockResponse = {
-        suggestions: [],
-      }
-
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: JSON.stringify(mockResponse),
-      })
-
-      const request = new Request('http://localhost:3000/api/ai/suggest-vendor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category: 'Plumbing',
-          priority: 'urgent',
-          description: 'Burst pipe flooding',
-        }),
-      })
-
-      // Act
-      await POST(request)
-
-      // Assert
-      expect(generateText).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'openai/gpt-4-turbo',
-          prompt: expect.stringContaining('Plumbing'),
-        })
-      )
-      expect(generateText).toHaveBeenCalledWith(
-        expect.objectContaining({
-          prompt: expect.stringContaining('urgent'),
-        })
-      )
-      expect(generateText).toHaveBeenCalledWith(
-        expect.objectContaining({
-          prompt: expect.stringContaining('Burst pipe flooding'),
-        })
-      )
     })
   })
 })

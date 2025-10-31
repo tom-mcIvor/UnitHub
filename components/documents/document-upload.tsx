@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X, Upload } from "lucide-react"
 import type { Tenant } from "@/lib/types"
+import { useRouter } from "next/navigation"
+import { createClient as createSupabaseClient } from "@/lib/supabase/client"
+import { createDocument } from "@/app/actions/documents"
+
+const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ?? "UnitHubDocuments"
 
 interface DocumentUploadProps {
   onClose: () => void
@@ -18,11 +23,14 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     tenantId: "",
     title: "",
     type: "other" as "lease" | "inspection" | "photo" | "other",
   })
+  const router = useRouter()
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -39,26 +47,98 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
     e.stopPropagation()
     setDragActive(false)
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0])
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setError(null)
     }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0])
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setError(null)
     }
+  }
+
+  const resetForm = () => {
+    setSelectedFile(null)
+    setFormData({
+      tenantId: "",
+      title: "",
+      type: "other",
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedFile) return
+
+    if (!selectedFile) {
+      setError("Please select a file to upload.")
+      return
+    }
+
+    const title = formData.title.trim()
+    if (!title) {
+      setError("Please provide a document title.")
+      return
+    }
 
     setIsUploading(true)
+    setError(null)
+    setSuccess(false)
+
     try {
-      // TODO: Call API to upload document
-      console.log("Uploading document:", { ...formData, file: selectedFile })
-      onClose()
+      const supabase = createSupabaseClient()
+
+      const fileExtension = selectedFile.name.includes(".")
+        ? selectedFile.name.substring(selectedFile.name.lastIndexOf("."))
+        : ""
+      const fileName = `${crypto.randomUUID()}${fileExtension}`
+      const directory = formData.tenantId || "property"
+      const path = `${directory}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage.from(STORAGE_BUCKET).upload(path, selectedFile, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: selectedFile.type || undefined,
+      })
+
+      if (uploadError) {
+        console.error("Error uploading document:", uploadError)
+        setError(uploadError.message || "Failed to upload document.")
+        return
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path)
+
+      if (!publicUrl) {
+        setError("Could not generate document URL after upload.")
+        return
+      }
+
+      const payload = new FormData()
+      payload.append("title", title)
+      payload.append("type", formData.type)
+      payload.append("fileUrl", publicUrl)
+      payload.append("tenantId", formData.tenantId ?? "")
+      payload.append("storagePath", path)
+
+      const result = await createDocument(payload)
+      if (!result.success) {
+        setError(result.error ?? "Failed to save document metadata.")
+        return
+      }
+
+      setSuccess(true)
+      router.refresh()
+      setTimeout(() => {
+        resetForm()
+        onClose()
+      }, 1000)
     } finally {
       setIsUploading(false)
     }
@@ -69,19 +149,30 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
       <Card className="w-full max-w-md">
         <div className="border-b border-border p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-text">Upload Document</h2>
-          <button onClick={onClose} className="p-1 hover:bg-surface rounded">
+          <button onClick={onClose} className="rounded p-1 hover:bg-surface">
             <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+              Document uploaded successfully!
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Tenant *</label>
+            <label className="mb-2 block text-sm font-medium text-text">Tenant *</label>
             <select
               value={formData.tenantId}
               onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              required
+              className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Property-level document</option>
               {tenants.map((tenant) => (
@@ -93,11 +184,11 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Document Type *</label>
+            <label className="mb-2 block text-sm font-medium text-text">Document Type *</label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as typeof formData.type })}
+              className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="lease">Lease Agreement</option>
               <option value="inspection">Inspection Report</option>
@@ -107,50 +198,60 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Title *</label>
+            <label className="mb-2 block text-sm font-medium text-text">Title *</label>
             <Input
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, title: e.target.value })
+                if (error) setError(null)
+              }}
               placeholder="Document title"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">File *</label>
+            <label className="mb-2 block text-sm font-medium text-text">File *</label>
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
                 dragActive ? "border-primary bg-blue-50" : "border-border"
               }`}
             >
               <Upload size={32} className="mx-auto mb-2 text-text-secondary" />
-              <p className="text-sm text-text-secondary mb-2">Drag and drop your file here, or click to select</p>
+              <p className="mb-2 text-sm text-text-secondary">Drag and drop your file here, or click to select</p>
               <input
                 type="file"
+                id="document-upload-input"
                 onChange={handleFileChange}
                 className="hidden"
-                id="file-input"
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
               />
-              <label htmlFor="file-input" className="cursor-pointer">
+              <label htmlFor="document-upload-input" className="cursor-pointer">
                 <Button type="button" variant="outline" size="sm" className="bg-transparent">
                   Select File
                 </Button>
               </label>
             </div>
-            {selectedFile && <p className="text-sm text-green-600 mt-2">✓ {selectedFile.name}</p>}
+            {selectedFile && <p className="mt-2 text-sm text-green-600">✓ {selectedFile.name}</p>}
           </div>
 
-          <div className="flex gap-3 justify-end pt-4">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => {
+                resetForm()
+                onClose()
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isUploading || !selectedFile}>
-              {isUploading ? "Uploading..." : "Upload"}
+              {isUploading ? "Uploading..." : success ? "Uploaded!" : "Upload"}
             </Button>
           </div>
         </form>

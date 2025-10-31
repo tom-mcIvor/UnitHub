@@ -52,9 +52,13 @@ CREATE TABLE IF NOT EXISTS documents (
   title VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,
   file_url TEXT NOT NULL,
+  storage_path TEXT NOT NULL,
   extracted_data JSONB,
   uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE documents
+  ADD COLUMN IF NOT EXISTS storage_path TEXT;
 
 -- Communication logs table
 CREATE TABLE IF NOT EXISTS communication_logs (
