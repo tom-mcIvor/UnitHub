@@ -16,9 +16,10 @@ interface TenantFormProps {
   onClose: () => void
   initialData?: TenantFormData
   editingTenant?: Tenant
+  onSuccess?: (tenant: Tenant) => void
 }
 
-export function TenantForm({ onClose, initialData, editingTenant }: TenantFormProps) {
+export function TenantForm({ onClose, initialData, editingTenant, onSuccess }: TenantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -51,6 +52,10 @@ export function TenantForm({ onClose, initialData, editingTenant }: TenantFormPr
 
       if (result.success) {
         setSuccess(true)
+        // Call onSuccess callback if provided (for optimistic updates)
+        if (result.data && onSuccess) {
+          onSuccess(result.data)
+        }
         // Wait a moment to show success message
         setTimeout(() => {
           router.refresh() // Refresh the page data

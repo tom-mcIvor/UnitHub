@@ -1,7 +1,7 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Current Coverage**: 26.72% overall | 108 Jest tests passing
+**Current Coverage**: 26.72% overall | 115 Jest tests passing
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
@@ -16,7 +16,7 @@
 - **Pages**: 0% ❌
 - **API Routes**: 100% ✅ (AI categorize/extract/reminder/suggest routes)
 
-**Total Tests**: 108 passing
+**Total Tests**: 115 passing
 
 ### ✅ Completed
 - [x] Jest & RTL setup

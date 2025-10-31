@@ -14,8 +14,9 @@ interface TenantDetailProps {
   tenant: Tenant
 }
 
-export function TenantDetail({ tenant }: TenantDetailProps) {
+export function TenantDetail({ tenant: initialTenant }: TenantDetailProps) {
   const [showEditForm, setShowEditForm] = useState(false)
+  const [tenant, setTenant] = useState(initialTenant)
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '—'

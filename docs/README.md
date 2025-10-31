@@ -22,8 +22,10 @@ The testing roadmap is your complete testing guide containing:
 
 - **[Testing Best Practices](./testing-best-practices.md)** - Patterns and guidelines for writing tests
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
-- **[Component Test Suite Stabilization](./component-test-suite-stabilization.md)** - Component test fixes history
-- **[Dashboard & Detail Component Testing](./dashboard-and-detail-testing.md)** - Latest dashboard/detail testing work summary
+- **[Test Memory Optimization](./test-memory-optimization.md)** - Memory configuration and heap size setup
+- **[Page Route Testing Progress](./page-route-testing-progress.md)** - Page component testing status
+- **[Edit Modals and Test Stabilization](./edit-modals-and-test-stabilization.md)** - Latest test fixes and edit modal implementation
+- **[Dashboard & Detail Component Testing](./dashboard-and-detail-testing.md)** - Dashboard/detail testing work summary
 - **[Additional Server Action Tests](./additional-server-action-tests.md)** - Server action coverage details
 
 ---
