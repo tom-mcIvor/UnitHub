@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react'
 import { MaintenanceDetail } from '@/components/maintenance/maintenance-detail'
 import type { MaintenanceRequestWithTenant } from '@/app/actions/maintenance'
 
+jest.mock('@/components/maintenance/maintenance-form', () => ({
+  MaintenanceForm: () => null,
+}))
+
 const baseRequest: MaintenanceRequestWithTenant = {
   id: 'req-1',
   tenantId: 'tenant-1',

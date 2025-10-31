@@ -3,6 +3,10 @@ import { render, screen } from '@testing-library/react'
 import { TenantDetail } from '@/components/tenants/tenant-detail'
 import type { Tenant } from '@/lib/types'
 
+jest.mock('@/components/tenants/tenant-form', () => ({
+  TenantForm: () => null,
+}))
+
 const baseTenant: Tenant = {
   id: 'tenant-1',
   name: 'Emily Carter',

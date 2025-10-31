@@ -7,9 +7,9 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "NODE_OPTIONS=--max-old-space-size=4096 jest --maxWorkers=2",
+    "test:watch": "NODE_OPTIONS=--max-old-space-size=4096 jest --watch --maxWorkers=2",
+    "test:coverage": "NODE_OPTIONS=--max-old-space-size=4096 jest --coverage --maxWorkers=2"
   },
   "dependencies": {
     "@hookform/resolvers": "latest",

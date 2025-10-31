@@ -66,7 +66,7 @@ describe('TenantDetailPage', () => {
 
     await expect(
       TenantDetailPage({ params: Promise.resolve({ id: 'missing-tenant' }) })
-    ).rejects.toThrowError('NOT_FOUND')
+    ).rejects.toThrow('NOT_FOUND')
     expect(notFoundMock).toHaveBeenCalledTimes(1)
   })
 })

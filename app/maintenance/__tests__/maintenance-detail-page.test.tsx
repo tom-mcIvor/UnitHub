@@ -17,6 +17,10 @@ jest.mock('@/app/actions/maintenance', () => ({
   getMaintenanceRequest: jest.fn(),
 }))
 
+jest.mock('@/app/actions/tenants', () => ({
+  getTenants: jest.fn().mockResolvedValue({ data: [], error: null }),
+}))
+
 const notFoundMock = jest.fn(() => {
   const error = new Error('NOT_FOUND')
   ;(error as any).digest = 'NEXT_NOT_FOUND'
@@ -60,7 +64,7 @@ describe('MaintenanceDetailPage', () => {
     render(element)
 
     expect(screen.getByTestId('layout')).toBeInTheDocument()
-    expect(mockMaintenanceDetail).toHaveBeenCalledWith({ request: maintenanceResponse.data })
+    expect(mockMaintenanceDetail).toHaveBeenCalledWith({ request: maintenanceResponse.data, tenants: [] })
   })
 
   it('invokes notFound when maintenance request is missing', async () => {
@@ -68,7 +72,7 @@ describe('MaintenanceDetailPage', () => {
 
     await expect(
       MaintenanceDetailPage({ params: Promise.resolve({ id: 'missing-request' }) })
-    ).rejects.toThrowError('NOT_FOUND')
+    ).rejects.toThrow('NOT_FOUND')
     expect(notFoundMock).toHaveBeenCalledTimes(1)
   })
 })
