@@ -30,7 +30,7 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 - Excludes node_modules, .next directory
 - Sets up coverage collection from `app/` and `components/`
 
-**`jest.setup.js`** (7 lines)
+**`jest.setup.ts`** (≈30 lines)
 - Imports `@testing-library/jest-dom` matchers
 - Adds TextEncoder/TextDecoder polyfills from 'util' module
 - Required for Next.js compatibility in jsdom environment
@@ -189,7 +189,7 @@ components/rent/
 
 ### TextEncoder/TextDecoder Polyfills
 **Problem**: `TextEncoder is not defined` errors
-**Solution**: Added polyfills to `jest.setup.js:5-7`
+**Solution**: Added polyfills/custom `Response` to `jest.setup.ts`
 ```typescript
 import { TextEncoder, TextDecoder } from 'util'
 global.TextEncoder = TextEncoder
@@ -295,7 +295,7 @@ Time:        5.632 s
 
 ## Files Created
 - `jest.config.js`
-- `jest.setup.js`
+- `jest.setup.ts`
 - `app/actions/__tests__/tenants.test.ts`
 - `app/actions/__tests__/rent.test.ts`
 - `app/actions/__tests__/maintenance.test.ts`

@@ -1,7 +1,7 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Current Coverage**: 12% overall | 30 server action tests passing | 23 component tests passing
+**Current Coverage**: 26.72% overall | 102 Jest tests passing
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
@@ -10,27 +10,27 @@
 
 ## 📊 Current Status
 
-**Overall Coverage**: 12%
-- **Server Actions**: 60-74% ✅ (30 tests passing)
-- **Components**: 0% (tracked) ⚠️ (23 tests passing but not counted)
+**Overall Coverage**: 26.72%
+- **Server Actions**: ~71.75% ✅ (dashboard actions now covered)
+- **Components**: 0% tracked ⚠️ (RTL suites exist but coverage tooling still ignores them)
 - **Pages**: 0% ❌
-- **API Routes**: 0% ❌
+- **API Routes**: 100% ✅ (AI categorize/extract/reminder/suggest routes)
 
-**Total Tests**: 53 passing
+**Total Tests**: 102 passing
 
 ### ✅ Completed
 - [x] Jest & RTL setup
-- [x] Server action tests (30 tests)
-- [x] Component tests (23 tests) - passing but coverage not tracked
+- [x] Server action tests (tenants, rent, maintenance, documents, communications, dashboard)
+- [x] Component tests (tenant/rent/dashboard/maintenance suites) - coverage still not tracked
 - [x] Test documentation
 - [x] Co-located test structure
+- [x] AI API route tests (categorize, extract lease, reminder, suggest vendor)
 
 ### 🚧 In Progress
 - [ ] Fix component coverage tracking
-- [ ] Test AI API routes
+- [ ] Add page component tests
 
 ### ❌ Not Started
-- [ ] Page component tests
 - [ ] Integration tests
 - [ ] E2E tests
 - [ ] Visual regression tests
@@ -114,7 +114,7 @@ After running `npm run test:coverage`:
 
 ### Configuration Files
 - `jest.config.js` - Main Jest configuration
-- `jest.setup.js` - Global test setup (polyfills, matchers)
+- `jest.setup.ts` - Global test setup (polyfills, matchers)
 - `package.json` - Test scripts and dependencies
 
 ### Future Config (Phase 4)
@@ -213,7 +213,7 @@ Achieve **60-70% overall coverage** with focus on:
 
 **Files to Update**:
 - `jest.config.js`
-- Possibly `jest.setup.js`
+- Possibly `jest.setup.ts`
 
 ---
 
@@ -922,7 +922,7 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
   - `docs/testing-implementation.md` - Current test infrastructure
   - `docs/testing-best-practices.md` - Testing guidelines and patterns
   - `jest.config.js` - Jest configuration
-  - `jest.setup.js` - Test environment setup
+  - `jest.setup.ts` - Test environment setup
 
 ### External Resources
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
@@ -939,7 +939,7 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
 ### Common Issues
 
 **Issue**: `TextEncoder is not defined`
-**Solution**: Already fixed in `jest.setup.js`, ensure you're running latest config
+**Solution**: Already fixed in `jest.setup.ts`, ensure you're running latest config
 
 **Issue**: `Request is not defined` in component tests
 **Solution**: See [Testing Implementation](./testing-implementation.md) - Known Issues section

@@ -635,7 +635,7 @@ For component tests failing with `Request is not defined`:
 ### Internal Docs
 - `docs/testing-implementation.md` - Detailed implementation notes
 - `jest.config.js` - Jest configuration
-- `jest.setup.js` - Global test setup
+- `jest.setup.ts` - Global test setup
 
 ---
 

@@ -202,7 +202,7 @@ Time:        1.791s
 - Created comprehensive testing documentation
 
 **Previous Sessions** (from testing-implementation.md):
-- Added TextEncoder/TextDecoder polyfills to jest.setup.js
+- Added TextEncoder/TextDecoder polyfills to jest.setup.ts
 - Attempted different assertion methods (toBeNull vs toBe(null))
 - Changed component test assertions from getByLabelText to getByText
 - Reorganized tests from root `__tests__/` to co-located structure

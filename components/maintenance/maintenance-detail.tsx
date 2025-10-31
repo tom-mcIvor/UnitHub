@@ -1,17 +1,23 @@
 "use client"
 
+import { useMemo, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit2, Wrench, User, Calendar } from "lucide-react"
 import Link from "next/link"
 import type { MaintenanceRequestWithTenant } from "@/app/actions/maintenance"
+import { MaintenanceForm } from "@/components/maintenance/maintenance-form"
+import type { MaintenanceRequestFormData } from "@/lib/schemas"
+import type { Tenant } from "@/lib/types"
 
 interface MaintenanceDetailProps {
   request: MaintenanceRequestWithTenant
+  tenants: Tenant[]
 }
 
-export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
+export function MaintenanceDetail({ request, tenants }: MaintenanceDetailProps) {
+  const [showEditForm, setShowEditForm] = useState(false)
   const formatDate = (dateString: string) => {
     if (!dateString) return '—'
     const date = new Date(dateString)
@@ -54,6 +60,16 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
   const estimatedCost = formatCost(request.estimatedCost)
   const actualCost = formatCost(request.actualCost)
 
+  const initialFormData: MaintenanceRequestFormData = useMemo(() => ({
+    tenantId: request.tenantId,
+    title: request.title,
+    description: request.description,
+    category: request.category,
+    priority: request.priority,
+    estimatedCost: request.estimatedCost ?? undefined,
+    assignedVendor: request.assignedVendor ?? '',
+  }), [request])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -67,7 +83,7 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
           <h1 className="text-3xl font-bold text-text">{request.title}</h1>
           <p className="text-text-secondary mt-1">Unit {request.unitNumber || 'N/A'}</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setShowEditForm(true)}>
           <Edit2 size={20} />
           Edit
         </Button>
@@ -198,6 +214,15 @@ export function MaintenanceDetail({ request }: MaintenanceDetailProps) {
           </Card>
         </div>
       </div>
+
+      {showEditForm && (
+        <MaintenanceForm
+          onClose={() => setShowEditForm(false)}
+          tenants={tenants}
+          editingRequest={request}
+          initialData={initialFormData}
+        />
+      )}
     </div>
   )
 }

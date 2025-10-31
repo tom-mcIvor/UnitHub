@@ -1,17 +1,22 @@
 "use client"
 
+import { useMemo, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit2, Mail, Phone, MapPin, Calendar, DollarSign } from "lucide-react"
 import Link from "next/link"
 import type { Tenant } from "@/lib/types"
+import { TenantForm } from "@/components/tenants/tenant-form"
+import type { TenantFormData } from "@/lib/schemas"
 
 interface TenantDetailProps {
   tenant: Tenant
 }
 
 export function TenantDetail({ tenant }: TenantDetailProps) {
+  const [showEditForm, setShowEditForm] = useState(false)
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '—'
     const date = new Date(dateString)
@@ -24,6 +29,19 @@ export function TenantDetail({ tenant }: TenantDetailProps) {
 
   const formatCurrency = (amount: number) =>
     amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  const initialFormData: TenantFormData = useMemo(() => ({
+    name: tenant.name,
+    email: tenant.email,
+    phone: tenant.phone,
+    unitNumber: tenant.unitNumber,
+    leaseStartDate: tenant.leaseStartDate,
+    leaseEndDate: tenant.leaseEndDate,
+    rentAmount: tenant.rentAmount,
+    depositAmount: tenant.depositAmount,
+    petPolicy: tenant.petPolicy || '',
+    notes: tenant.notes || '',
+  }), [tenant])
 
   return (
     <div className="space-y-6">
@@ -38,7 +56,7 @@ export function TenantDetail({ tenant }: TenantDetailProps) {
           <h1 className="text-3xl font-bold text-text">{tenant.name}</h1>
           <p className="text-text-secondary mt-1">Unit {tenant.unitNumber}</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setShowEditForm(true)}>
           <Edit2 size={20} />
           Edit
         </Button>
@@ -144,6 +162,14 @@ export function TenantDetail({ tenant }: TenantDetailProps) {
           </Button>
         </div>
       </Card>
+
+      {showEditForm && (
+        <TenantForm
+          onClose={() => setShowEditForm(false)}
+          editingTenant={tenant}
+          initialData={initialFormData}
+        />
+      )}
     </div>
   )
 }

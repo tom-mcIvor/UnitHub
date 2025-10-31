@@ -62,31 +62,21 @@ Converted to async Server Component:
 
 **`/components/tenants/tenant-detail.tsx`**
 - Changed from mock data to accepting `tenant: Tenant` prop
-- Updated all field references to snake_case database fields:
-  - `tenant.unit_number` (was `unitNumber`)
-  - `tenant.lease_start`, `tenant.lease_end` (was `leaseStartDate`, `leaseEndDate`)
-  - `tenant.rent_amount`, `tenant.deposit_amount` (was `rentAmount`, `depositAmount`)
-  - `tenant.pet_policy` (was `petPolicy`)
-- Added `formatDate()` helper for consistent date display
-- Currency values formatted with locale and 2 decimal places
+- Updated all field references to camelCase fields provided by server actions
+- Added edit modal support via `<TenantForm>` with pre-populated data
 
 ### 5. Maintenance Detail Page Fixed (`/app/maintenance/[id]/page.tsx`)
 
 Converted to async Server Component:
-- Calls `getMaintenanceRequest(id)` server action
+- Calls `getMaintenanceRequest(id)` server action (now in parallel with `getTenants()`)
 - Added `export const dynamic = 'force-dynamic'`
 - Changed params type to `Promise<{ id: string }>`
 - Returns `notFound()` if request not found or error occurs
 
 **`/components/maintenance/maintenance-detail.tsx`**
 - Changed from mock data to accepting `request: MaintenanceRequestWithTenant` prop
-- Updated all field references to snake_case database fields:
-  - `request.tenant_id`, `request.tenantName`, `request.tenantUnitNumber` (from JOIN)
-  - `request.estimated_cost`, `request.actual_cost` (was `estimatedCost`, `actualCost`)
-  - `request.assigned_vendor` (was `assignedVendor`)
-  - `request.created_at`, `request.updated_at` (was `createdAt`, `updatedAt`)
-- Added `formatDate()` and `formatCost()` helpers
-- Handles null cost values with "-" display
+- Added edit modal support via `<MaintenanceForm>` using live tenant data for dropdowns
+- Maintains formatting helpers for status, priority, and cost display
 
 ---
 
@@ -193,24 +183,7 @@ Converted to async Server Component:
 **Where to look**:
 - Next.js docs: https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming
 
-### 6. Detail Page Edit Buttons Not Functional
-**Location**: `/components/tenants/tenant-detail.tsx:35-38`, `/components/maintenance/maintenance-detail.tsx:66-69`
-**Issue**: "Edit" buttons exist but have no onClick handlers. Buttons don't do anything.
-
-**How this relates to new code**: Detail pages now display real data but can't edit it from detail view.
-
-**Suggested solutions**:
-- Import `TenantForm` and `MaintenanceForm` modals
-- Add state: `const [showEditModal, setShowEditModal] = useState(false)`
-- Add onClick: `<Button onClick={() => setShowEditModal(true)}>`
-- Pass tenant/request data to form as `initialData` prop
-- See `/components/tenants/tenants-list.tsx:38-45` for working edit pattern
-
-**Where to look**:
-- `/components/tenants/tenants-list.tsx:38-55` - Working edit implementation
-- `/components/maintenance/maintenance-page.tsx:50-67` - Working edit implementation
-
-### 7. No Server-Side Validation
+### 6. No Server-Side Validation
 **Location**: All server actions
 **Issue**: Server actions trust client data without re-validation. Can be bypassed.
 

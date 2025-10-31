@@ -21,9 +21,27 @@ const baseRequest: MaintenanceRequestWithTenant = {
   updatedAt: '2025-10-02T10:00:00Z',
 }
 
+const tenants = [
+  {
+    id: 'tenant-1',
+    name: 'Emily Carter',
+    email: 'emily@example.com',
+    phone: '555-1234',
+    unitNumber: '305',
+    leaseStartDate: '2025-01-01',
+    leaseEndDate: '2025-12-31',
+    rentAmount: 1800,
+    depositAmount: 1800,
+    petPolicy: '',
+    notes: '',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+  },
+]
+
 describe('MaintenanceDetail', () => {
   it('should render maintenance details with formatted values', () => {
-    render(<MaintenanceDetail request={baseRequest} />)
+    render(<MaintenanceDetail request={baseRequest} tenants={tenants} />)
 
     expect(screen.getByText('Fix kitchen leak')).toBeInTheDocument()
     expect(screen.getByText(/Unit 305/)).toBeInTheDocument()
@@ -47,7 +65,7 @@ describe('MaintenanceDetail', () => {
       assignedVendor: undefined,
     }
 
-    render(<MaintenanceDetail request={requestWithoutOptional} />)
+    render(<MaintenanceDetail request={requestWithoutOptional} tenants={tenants} />)
 
     expect(screen.getByText(/Unit N\/A/)).toBeInTheDocument()
     expect(screen.getByText('Unknown')).toBeInTheDocument()
