@@ -181,26 +181,28 @@ Added `loading.tsx` files for all main feature pages to provide visual feedback 
 
 ---
 
+### Authentication
+
+**Location**: `/app/auth`, `/middleware.ts`
+
+**Description**:
+
+Implemented a basic authentication system using Supabase Auth. This includes:
+- A middleware to protect all routes and redirect unauthenticated users to the login page.
+- Login and signup pages with simple forms that use server actions to interact with Supabase Auth.
+- A callback page to handle email confirmations from Supabase.
+
+**Files Created**:
+- `/middleware.ts`
+- `/app/auth/login/page.tsx`
+- `/app/auth/signup/page.tsx`
+- `/app/auth/callback/page.tsx`
+
+---
+
 ## Problems That Still Exist
 
-### 1. No Authentication System
-**Location**: All pages and server actions
-**Issue**: No user sessions, anyone can access all data.
-
-**Security Implications**:
-- All server actions use `createClient()` from `/lib/supabase/server.ts` without auth checks
-- No middleware to protect routes
-- No Row Level Security (RLS) policies in Supabase
-- No `user_id` column in any table
-
-**Suggested Solutions**:
-- Enable Supabase Auth in dashboard
-- Create `/middleware.ts` to check session with `supabase.auth.getUser()`
-- Add `user_id UUID REFERENCES auth.users(id)` to all tables
-- Add RLS policies: `WHERE user_id = auth.uid()`
-- Create login/signup pages using Supabase Auth
-
-### 2. Payment Status Not Auto-Updated
+### 1. Payment Status Not Auto-Updated
 **Location**: `/app/actions/rent.ts`
 **Issue**: Rent payments don't automatically change from "pending" to "overdue" based on date.
 

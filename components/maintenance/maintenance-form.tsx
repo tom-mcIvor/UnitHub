@@ -18,7 +18,6 @@ interface MaintenanceFormProps {
   tenants?: Tenant[]
   editingRequest?: MaintenanceRequestWithTenant
   initialData?: MaintenanceRequestFormData
-  createMaintenanceRequest?: (formData: FormData) => Promise<{ success: boolean; error: string | null; data: MaintenanceRequest | null }>
 }
 
 export function MaintenanceForm({ onClose, tenants = [], editingRequest, initialData }: MaintenanceFormProps) {

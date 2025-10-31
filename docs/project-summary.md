@@ -159,6 +159,11 @@ The codebase is structured to easily extend with:
 - Mobile app
 - Additional AI features (communication assistant, predictive analytics, photo analysis)
 
+### 8. Authentication
+- Basic authentication system using Supabase Auth.
+- Middleware to protect all routes.
+- Login, signup, and callback pages.
+
 ---
 
-**Status**: Core MVP features complete and ready for Supabase integration, authentication setup, and deployment.
+**Status**: Core MVP features complete, including basic authentication. Ready for Supabase integration, RLS policies, and deployment.
