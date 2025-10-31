@@ -41,8 +41,8 @@
 
 ## Deferred / Next Steps
 
-1. Expand dashboard tests to cover navigation and error recovery (e.g., verifying `Link` usage).  
-2. Backfill tests for documents dashboard/cards, matching the new component suite structure.  
-3. Replace the custom `Response` stub once a stable fetch polyfill is vetted, or guard it with integration tests.  
-4. Capture component coverage metrics (Phase 1 task) by fixing the current tooling gap noted in `docs/testing-roadmap.md`.  
-5. Add page-level tests for `/app/page.tsx`, `/app/tenants/[id]/page.tsx`, `/app/maintenance/[id]/page.tsx` to verify data-loading branches end to end.
+1. Expand dashboard tests to cover navigation and error recovery (e.g., verifying `Link` usage).
+2. Backfill tests for documents dashboard/cards, matching the new component suite structure.
+3. Replace the custom `Response` stub once a stable fetch polyfill is vetted, or guard it with integration tests.
+4. Capture component coverage metrics (Phase 1 task) by fixing the current tooling gap noted in `docs/testing-roadmap.md`.
+5. ✅ ~~Add page-level tests~~ - **Completed**: See `docs/page-route-testing-progress.md`

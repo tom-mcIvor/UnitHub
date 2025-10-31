@@ -37,10 +37,12 @@ npm install --save-dev jest @testing-library/react @testing-library/jest-dom @te
 
 ### Test Scripts Added to package.json
 ```json
-"test": "jest"
-"test:watch": "jest --watch"
-"test:coverage": "jest --coverage"
+"test": "NODE_OPTIONS=--max-old-space-size=4096 jest --maxWorkers=2",
+"test:watch": "NODE_OPTIONS=--max-old-space-size=4096 jest --watch --maxWorkers=2",
+"test:coverage": "NODE_OPTIONS=--max-old-space-size=4096 jest --coverage --maxWorkers=2"
 ```
+
+**Note**: Memory configuration added to prevent heap overflow with 108+ tests. See `docs/test-memory-optimization.md`.
 
 ### Test Files Created (6 files)
 
@@ -267,29 +269,27 @@ global.TextDecoder = TextDecoder
 
 ## Test Results Summary
 
-**Command**: `npm test -- --runInBand`
+**Command**: `npm test`
 
-**Output**:
+**Latest Output** (2025-10-31):
+```
+Test Suites: 23 passed, 23 total
+Tests:       108 passed, 108 total
+Time:        6.674 s
+```
+
+**Coverage**:
+- Server Actions: ~71.75%
+- Components: Tracked but not counted (tooling issue)
+- Pages: 3 page components tested
+- API Routes: 100%
+
+**Original Implementation** (Initial):
 ```
 Test Suites: 9 passed, 9 total
 Tests:       53 passed, 53 total
 Time:        5.632 s
 ```
-
-**Breakdown**:
-- `app/actions/__tests__/tenants.test.ts`: 6/6 passing ✅
-- `app/actions/__tests__/rent.test.ts`: 5/5 passing ✅
-- `app/actions/__tests__/maintenance.test.ts`: 6/6 passing ✅
-- `app/actions/__tests__/documents.test.ts`: 7/7 passing ✅
-- `app/actions/__tests__/communications.test.ts`: 6/6 passing ✅
-- `components/tenants/__tests__/tenant-form.test.tsx`: 4/4 passing ✅
-- `components/tenants/__tests__/tenants-list.test.tsx`: 7/7 passing ✅
-- `components/rent/__tests__/rent-payment-form.test.tsx`: 5/5 passing ✅
-- `components/rent/__tests__/rent-tracking-page.test.tsx`: 7/7 passing ✅
-
-**Total Coverage**:
-- Server Actions: 30/30 passing
-- Components: 23/23 passing (RentChart mocked)
 
 ---
 
