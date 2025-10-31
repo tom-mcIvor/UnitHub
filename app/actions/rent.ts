@@ -14,13 +14,27 @@ export interface RentPaymentWithTenant extends RentPayment {
 
 // Convert database snake_case to TypeScript camelCase
 function mapDbToRentPayment(row: any): RentPayment {
+  // Calculate actual status based on due date
+  let actualStatus = row.status
+
+  // If status is 'pending' and due date has passed, mark as 'overdue'
+  if (row.status === 'pending' && row.due_date) {
+    const dueDate = new Date(row.due_date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time for date-only comparison
+
+    if (dueDate < today) {
+      actualStatus = 'overdue'
+    }
+  }
+
   return {
     id: row.id,
     tenantId: row.tenant_id,
     amount: parseFloat(row.amount),
     dueDate: row.due_date,
     paidDate: row.paid_date || undefined,
-    status: row.status,
+    status: actualStatus,
     notes: row.notes || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,

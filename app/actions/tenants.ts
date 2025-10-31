@@ -78,8 +78,8 @@ export async function createTenant(formData: FormData): Promise<{ success: boole
     const rawData = Object.fromEntries(formData.entries())
     const parsed = tenantSchema.safeParse({
       ...rawData,
-      rentAmount: parseFloat(rawData.rentAmount as string),
-      depositAmount: parseFloat(rawData.depositAmount as string),
+      rentAmount: rawData.rentAmount ? parseFloat(rawData.rentAmount as string) : undefined,
+      depositAmount: rawData.depositAmount ? parseFloat(rawData.depositAmount as string) : undefined,
     })
 
     if (!parsed.success) {
@@ -135,8 +135,8 @@ export async function updateTenant(id: string, formData: FormData): Promise<{ su
     const rawData = Object.fromEntries(formData.entries())
     const parsed = tenantSchema.safeParse({
       ...rawData,
-      rentAmount: parseFloat(rawData.rentAmount as string),
-      depositAmount: parseFloat(rawData.depositAmount as string),
+      rentAmount: rawData.rentAmount ? parseFloat(rawData.rentAmount as string) : undefined,
+      depositAmount: rawData.depositAmount ? parseFloat(rawData.depositAmount as string) : undefined,
     })
 
     if (!parsed.success) {

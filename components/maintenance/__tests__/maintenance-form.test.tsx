@@ -71,12 +71,12 @@ describe("MaintenanceForm", () => {
 
     await user.selectOptions(screen.getByLabelText("Tenant *"), "1");
     await user.selectOptions(screen.getByLabelText("Category *"), "Plumbing");
+    await user.selectOptions(screen.getByLabelText("Priority *"), "medium");
     await user.type(screen.getByLabelText("Title *"), "Leaky faucet");
     await user.type(screen.getByLabelText("Description *"), "The kitchen sink is leaking.");
 
-    await act(async () => {
-      fireEvent.submit(screen.getByTestId('maintenance-form'))
-    });
+    const submitButton = screen.getByRole("button", { name: "Create Request" });
+    await user.click(submitButton);
 
     expect(await screen.findByText("Maintenance request created successfully!")).toBeInTheDocument();
   });

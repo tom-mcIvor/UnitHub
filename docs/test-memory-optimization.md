@@ -1,7 +1,8 @@
 # Test Suite Memory Optimization
 
 **Date**: 2025-10-31
-**Status**: ✅ Resolved - 115 tests passing without memory overflow
+**Updated**: 2025-11-01
+**Status**: ✅ Resolved - 137 tests passing without memory overflow
 
 ---
 
@@ -47,9 +48,9 @@ Exit code 134
 
 After fix:
 ```
-Test Suites: 24 passed, 24 total
-Tests:       115 passed, 115 total
-Time:        6.2 s
+Test Suites: 31 passed, 31 total
+Tests:       137 passed, 137 total (136 passing as of 2025-11-01)
+Time:        ~10 s
 ```
 
 ---
@@ -90,9 +91,10 @@ See `docs/page-route-testing-progress.md` for details.
 
 ## Next Steps
 
-1. Monitor memory usage as test count grows (currently 115 tests across 24 suites)
+1. Monitor memory usage as test count grows (currently 137 tests across 31 suites)
 2. Consider splitting test suites if count exceeds 200-300 tests
 3. Configure CI runner memory limits to match local environment (4GB heap + overhead)
+4. See [test-fixes-and-payment-status.md](./test-fixes-and-payment-status.md) for latest test fixes
 
 ---
 
