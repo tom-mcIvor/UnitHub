@@ -1,7 +1,7 @@
 # Testing Infrastructure Implementation
 
 **Date**: 2025-10-31
-**Status**: Partial - Server action tests passing, component tests blocked by environment issues
+**Status**: Stable - Server + component suites passing (RentChart mocked in tests)
 
 ---
 
@@ -95,39 +95,37 @@ components/rent/
   - `deleteRentPayment(id)` - Delete payment
 - Mocks: Supabase client, next/cache revalidatePath
 
-#### Component Tests (All Failing - Environment Issues)
+#### Component Tests (Passing with Targeted Mocks)
 
-**`components/tenants/__tests__/tenant-form.test.tsx`** (58 lines)
-- Intended tests: 4
+**`components/tenants/__tests__/tenant-form.test.tsx`** (≈90 lines)
+- Tests: 4 passing
   - Renders all form fields
   - Shows validation errors
   - Calls onClose on cancel
   - Submits with valid data
-- Status: Fails with `ReferenceError: Request is not defined`
-- Mocks: next/navigation useRouter, createTenant action
+- Mocks: `next/navigation` `useRouter`, `createTenant` action
 
-**`components/rent/__tests__/rent-payment-form.test.tsx`** (108 lines)
-- Intended tests: 5
+**`components/rent/__tests__/rent-payment-form.test.tsx`** (≈110 lines)
+- Tests: 5 passing
   - Renders form with tenant dropdown
   - Populates tenants
   - Shows validation errors
   - Calls onClose on cancel
-  - Submits with valid data
-- Status: Fails with `ReferenceError: Request is not defined`
-- Mocks: next/navigation useRouter, createRentPayment action
+  - Submits with valid data via toast confirmation
+- Mocks: `next/navigation` `useRouter`, `createRentPayment` action
 
-**`components/tenants/__tests__/tenants-list.test.tsx`** (88 lines)
-- Intended tests: 6
+**`components/tenants/__tests__/tenants-list.test.tsx`** (≈110 lines)
+- Tests: 7 passing
   - Renders tenant list
   - Shows empty state
   - Displays error message
   - Filters by search term
   - Filters by unit number
+  - Ensures Add Tenant button renders
   - Opens form modal
-- Status: Fails with `ReferenceError: Request is not defined`
 
-**`components/rent/__tests__/rent-tracking-page.test.tsx`** (121 lines)
-- Intended tests: 7
+**`components/rent/__tests__/rent-tracking-page.test.tsx`** (≈130 lines)
+- Tests: 7 passing
   - Renders with payments
   - Displays statistics cards
   - Filters by status
@@ -135,7 +133,7 @@ components/rent/
   - Shows Record Payment button
   - Displays error message
   - Shows empty state
-- Status: Fails with `ReferenceError: Request is not defined`
+- Mocks: `next/navigation`, server actions, and `RentChart` to avoid React act warnings
 
 ### Documentation Created
 **`__tests__/README.md`** (190 lines)
@@ -151,136 +149,39 @@ components/rent/
 
 ## Problems That Still Exist
 
-### 1. Component Tests Fail Due to Next.js Server Imports
-**Error**: `ReferenceError: Request is not defined`
+### 1. RentChart Coverage Gap
+**Location**: `components/rent/__tests__/rent-tracking-page.test.tsx`
+**Issue**: The chart is mocked out to keep the suite stable, leaving the real `RentChart` implementation untested.
+
+**Suggested Solutions** (untested):
+1. Add focused unit tests around the data preparation helpers that feed `RentChart`.
+2. Introduce a Storybook/visual regression check to exercise the chart render path.
+3. Swap the mock for a lightweight wrapper that asserts key props while still suppressing the heavy `ResponsiveContainer`.
+
+### 2. Fragile Text-Based Queries
 **Location**: All component test files
+**Issue**: Assertions currently rely on placeholder text and exact copy (e.g., `'Tenant *'`, `'Record Payment'`), which can break after copy tweaks.
 
-**Root Cause**:
-- Component files import server actions (`@/app/actions/*`)
-- Server actions import `next/cache` which uses Next.js server APIs
-- jsdom environment doesn't provide `Request`, `Response`, web streams
-- Import chain: Component → Server Action → next/cache → Server APIs
+**Suggested Solutions** (untested):
+1. Add data attributes (e.g., `data-testid`) or semantic roles that remain stable across copy changes.
+2. Use `getByRole` with accessible names that mirror the design system tokens.
+3. Export helper functions that wrap querying logic to centralize future updates.
 
-**Example Stack Trace**:
-```
-at Object.Request (node_modules/next/src/server/web/spec-extension/request.ts:14:34)
-at Object.<anonymous> (node_modules/next/cache.js:2:19)
-at Object.<anonymous> (app/actions/rent.ts:30:16)
-at Object.<anonymous> (components/rent/rent-payment-form.tsx:21:15)
-```
+### 3. Missing Integration & E2E Coverage
+**Issue**: The suite still focuses on isolated units and components; no tests exercise full request/response flows or end-to-end UI journeys.
 
-**Files Affected**:
-- `components/tenants/__tests__/tenant-form.test.tsx`
-- `components/rent/__tests__/rent-payment-form.test.tsx`
-- `components/tenants/__tests__/tenants-list.test.tsx`
-- `components/rent/__tests__/rent-tracking-page.test.tsx`
+**Suggested Solutions** (untested):
+1. Stand up a `tests/integration/` directory that hits Supabase via a disposable database or mocks at the network layer.
+2. Add Playwright/Cypress smoke tests that load the rent dashboard and tenant workflows in a real browser.
+3. Reuse existing server-action mocks in higher-level tests to verify routed pages and layouts.
 
-**Suggested Solutions** (Not Tested):
+### 4. No Visual Regression Guardrails
+**Issue**: UI regressions may slip through because the suite asserts behavior only.
 
-1. **Mock Entire Server Action Files**
-   - Mock at file level before component import
-   - Location: Before `render()` calls in test files
-   ```typescript
-   jest.mock('@/app/actions/rent', () => ({
-     createRentPayment: jest.fn(),
-     getRentPayments: jest.fn(),
-   }))
-   ```
-
-2. **Refactor Component Architecture**
-   - Separate container components from presentational
-   - Move server action imports to page level only
-   - Pass functions as props to components
-   - Location: `/components/rent/`, `/components/tenants/`, etc.
-
-3. **Use Node Test Environment**
-   - Change `jest-environment-jsdom` to `jest-environment-node`
-   - Location: `jest.config.js:9`
-   - Limitation: Cannot test DOM interactions
-
-4. **Mock next/cache Globally**
-   - Add to `jest.setup.js`
-   - Mock Request, Response, Headers classes
-   - May require extensive polyfills
-
-5. **Use E2E Testing Instead**
-   - Install Playwright or Cypress
-   - Test components in real browser environment
-   - Keep unit tests for server actions only
-
-### 2. Mock Data Structure Mismatch
-**Location**: Component test files
-**Issue**: Mock tenants have camelCase but real DB returns snake_case (handled by mapper functions)
-
-**Current Mock**:
-```typescript
-const mockTenants = [{
-  id: '123',
-  name: 'John Doe',
-  unitNumber: '101', // camelCase
-}]
-```
-
-**Actual Response**:
-```typescript
-{
-  id: '123',
-  name: 'John Doe',
-  unit_number: '101', // snake_case
-}
-```
-
-**Suggested Solution**:
-- Use mapper functions in mocks to match real data flow
-- Location: All `__tests__/components/*.test.tsx` mock data definitions
-
-### 3. Form Label Assertions Fail
-**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:48-55`
-**Issue**: `getByLabelText()` fails because labels don't use `htmlFor` attribute
-
-**Current Code** (components):
-```tsx
-<label className="...">Tenant *</label>
-<select {...register("tenantId")}>
-```
-
-**Problem**: Label not associated with input
-
-**Suggested Solutions**:
-1. Add `htmlFor` to labels in form components
-2. Use `getByText()` instead of `getByLabelText()` in tests (already done)
-
-### 4. No Tests for Other Server Actions
-**Missing Tests**:
-- `/app/actions/maintenance.ts` - No test file created
-- `/app/actions/documents.ts` - No test file created
-- `/app/actions/communications.ts` - No test file created
-
-**Suggested Implementation**:
-- Follow pattern from `app/actions/__tests__/tenants.test.ts`
-- Mock Supabase client with appropriate table responses
-- Test CRUD operations and validation
-
-### 5. No Integration Tests
-**Issue**: Unit tests don't verify full request/response cycle
-
-**What's Missing**:
-- API route tests (if any exist)
-- Database integration tests with test database
-- Form submission end-to-end flow
-
-**Suggested Solutions**:
-- Create separate `tests/integration/` directory at project root
-- Use Supabase test project or Docker postgres container
-- Test actual database operations with cleanup
-
-### 6. No Visual Regression Tests
-**Issue**: UI changes not automatically detected
-
-**Suggested Solutions**:
-- Add Storybook for component development
-- Integrate Chromatic or Percy for visual diffs
-- Create snapshot tests for static components
+**Suggested Solutions** (untested):
+1. Layer Storybook stories for key screens and connect them to Chromatic or Percy.
+2. Capture screenshot baselines during CI using Playwright’s snapshot feature.
+3. Add selective Jest snapshots for static shadcn components where behavior is minimal.
 
 ---
 
@@ -294,26 +195,29 @@ import { TextEncoder, TextDecoder } from 'util'
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 ```
-**Result**: Fixed initial errors, but Request/Response errors remained
+**Result**: Required for both server action and component suites; kept in place.
 
-### toBeNull vs toBe(null)
-**Problem**: Test assertion `expect(result.data).toBeNull()` failed
-**Error**: `Expected null, received undefined`
-**Solution**: Changed to `expect(result.data).toBe(null)` but still failed
-**Final Fix**: Removed assertion entirely - server action returns undefined, not null
+### Server Action Return Assertions
+**Problem**: `expect(result.data).toBeNull()` failed because the helper returned `undefined`.
+**Fix**: Removed the null assertion where Supabase returns `undefined` on failure.
 **Location**: `app/actions/__tests__/tenants.test.ts:119`
 
 ### Label Assertions
-**Problem**: `getByLabelText()` failed in component tests
-**Attempted Fix**: Changed to `getByText()` for labels
-**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:51-54`
-**Result**: Partial success, but Request error blocked full test
+**Problem**: `getByLabelText()` failed in component tests because labels lack `htmlFor`.
+**Fix**: Switched to `getByText()` assertions and placeholder queries.
+**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:48-55`
+**Result**: Tests now pass using text-based selectors.
 
 ### Form Input Selection
-**Problem**: `getByLabelText()` couldn't find inputs
-**Attempted Fix**: Used `getByPlaceholderText()` and `getAllByRole('textbox')`
-**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:90-93`
-**Result**: Works for accessible inputs, but test still blocked by environment
+**Problem**: Needed reliable handles for date inputs rendered without labels.
+**Fix**: Used `getByPlaceholderText()` and direct role queries to locate inputs.
+**Location**: `components/rent/__tests__/rent-payment-form.test.tsx:93-104`
+**Result**: Inputs are populated during submission tests.
+
+### Fake Timers for Toast Assertions
+**Problem**: Closing the rent payment modal depends on a `setTimeout`.
+**Attempt**: Introduced `jest.useFakeTimers()` and manual form submission.
+**Outcome**: Reverted to `user-event` flow once the success toast assertion proved stable without timer control.
 
 ---
 
@@ -334,12 +238,6 @@ global.TextDecoder = TextDecoder
 - Did not set up Playwright for E2E tests
 - Did not configure Storybook for visual testing
 - Did not add MSW (Mock Service Worker) for API mocking
-
-### Additional Server Action Tests
-- Did not create tests for maintenance actions
-- Did not create tests for documents actions
-- Did not create tests for communications actions
-- Did not test error scenarios beyond validation
 
 ### Integration Testing
 - Did not set up test database
@@ -369,26 +267,29 @@ global.TextDecoder = TextDecoder
 
 ## Test Results Summary
 
-**Command**: `npm test -- __tests__/actions/`
+**Command**: `npm test -- --runInBand`
 
 **Output**:
 ```
-Test Suites: 2 passed, 2 total
-Tests:       11 passed, 11 total
-Time:        1.527s
+Test Suites: 9 passed, 9 total
+Tests:       53 passed, 53 total
+Time:        5.632 s
 ```
 
 **Breakdown**:
-- `tenants.test.ts`: 6/6 passing ✅
-- `rent.test.ts`: 5/5 passing ✅
-- `tenant-form.test.tsx`: 0/4 passing ❌ (environment)
-- `rent-payment-form.test.tsx`: 0/5 passing ❌ (environment)
-- `tenants-list.test.tsx`: 0/6 passing ❌ (environment)
-- `rent-tracking-page.test.tsx`: 0/7 passing ❌ (environment)
+- `app/actions/__tests__/tenants.test.ts`: 6/6 passing ✅
+- `app/actions/__tests__/rent.test.ts`: 5/5 passing ✅
+- `app/actions/__tests__/maintenance.test.ts`: 6/6 passing ✅
+- `app/actions/__tests__/documents.test.ts`: 7/7 passing ✅
+- `app/actions/__tests__/communications.test.ts`: 6/6 passing ✅
+- `components/tenants/__tests__/tenant-form.test.tsx`: 4/4 passing ✅
+- `components/tenants/__tests__/tenants-list.test.tsx`: 7/7 passing ✅
+- `components/rent/__tests__/rent-payment-form.test.tsx`: 5/5 passing ✅
+- `components/rent/__tests__/rent-tracking-page.test.tsx`: 7/7 passing ✅
 
 **Total Coverage**:
-- Server Actions: 100% of created tests passing
-- Components: 0% passing (blocked by environment)
+- Server Actions: 30/30 passing
+- Components: 23/23 passing (RentChart mocked)
 
 ---
 
@@ -397,6 +298,9 @@ Time:        1.527s
 - `jest.setup.js`
 - `app/actions/__tests__/tenants.test.ts`
 - `app/actions/__tests__/rent.test.ts`
+- `app/actions/__tests__/maintenance.test.ts`
+- `app/actions/__tests__/documents.test.ts`
+- `app/actions/__tests__/communications.test.ts`
 - `components/tenants/__tests__/tenant-form.test.tsx`
 - `components/tenants/__tests__/tenants-list.test.tsx`
 - `components/rent/__tests__/rent-payment-form.test.tsx`
@@ -406,8 +310,8 @@ Time:        1.527s
 - `package.json` - Added test scripts and devDependencies
 
 ## Next Recommended Steps
-1. Mock server action files entirely in component tests
-2. Create tests for remaining server actions (maintenance, documents, communications)
-3. Set up Playwright for E2E testing
-4. Refactor components to separate concerns
-5. Add integration tests with test database
+1. Add targeted coverage or visual tests for `RentChart` since it is currently mocked.
+2. Introduce integration/E2E tests (Playwright or Cypress) for rent tracking and tenant workflows.
+3. Harden component selectors by adding semantic labels or test IDs to reduce copy brittleness.
+4. Consider Storybook/Chromatic to catch UI regressions alongside the behavioral suites.
+5. Automate test execution in CI and capture coverage artifacts once the suite stabilizes.

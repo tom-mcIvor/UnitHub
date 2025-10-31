@@ -48,10 +48,10 @@ describe('RentPaymentForm', () => {
   it('renders form with tenant dropdown', () => {
     render(<RentPaymentForm onClose={mockOnClose} tenants={mockTenants} />)
 
-    expect(screen.getByText(/tenant/i)).toBeInTheDocument()
-    expect(screen.getByText(/amount/i)).toBeInTheDocument()
-    expect(screen.getByText(/due date/i)).toBeInTheDocument()
-    expect(screen.getByText(/status/i)).toBeInTheDocument()
+    expect(screen.getByText('Tenant *')).toBeInTheDocument()
+    expect(screen.getByText('Amount *')).toBeInTheDocument()
+    expect(screen.getByText('Due Date *')).toBeInTheDocument()
+    expect(screen.getByText('Status *')).toBeInTheDocument()
   })
 
   it('populates tenant dropdown with provided tenants', () => {
@@ -86,23 +86,23 @@ describe('RentPaymentForm', () => {
     const user = userEvent.setup()
     render(<RentPaymentForm onClose={mockOnClose} tenants={mockTenants} />)
 
-    // Get inputs by placeholder text
-    const amountInput = screen.getByPlaceholderText(/1200/i)
-    const dueDateInput = screen.getAllByRole('textbox').find(el =>
-      el.previousElementSibling?.textContent?.includes('Due Date')
-    )
+    const [tenantSelect, statusSelect] = screen.getAllByRole('combobox')
+    await user.selectOptions(tenantSelect, '123')
+    await user.selectOptions(statusSelect, 'paid')
 
-    // Fill out form
-    if (dueDateInput) {
-      await user.type(dueDateInput, '2024-01-31')
-    }
+    const amountInput = screen.getByPlaceholderText(/1200/i)
+    await user.clear(amountInput)
     await user.type(amountInput, '1200')
+
+    const dueDateInput = document.querySelector('input[name="dueDate"]') as HTMLInputElement | null
+    expect(dueDateInput).not.toBeNull()
+    fireEvent.change(dueDateInput!, { target: { value: '2024-01-31' } })
 
     const submitButton = screen.getByRole('button', { name: /record payment/i })
     await user.click(submitButton)
 
     await waitFor(() => {
       expect(screen.getByText(/payment recorded successfully/i)).toBeInTheDocument()
-    }, { timeout: 3000 })
+    })
   })
 })

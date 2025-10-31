@@ -2,6 +2,19 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TenantsList } from '@/components/tenants/tenants-list'
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    refresh: jest.fn(),
+    push: jest.fn(),
+  }),
+}))
+
+jest.mock('@/app/actions/tenants', () => ({
+  createTenant: jest.fn(),
+  updateTenant: jest.fn(),
+  deleteTenant: jest.fn(() => Promise.resolve({ success: true, error: null })),
+}))
+
 const mockTenants = [
   {
     id: '123',
@@ -70,8 +83,8 @@ describe('TenantsList', () => {
   it('filters tenants by unit number', () => {
     render(<TenantsList initialTenants={mockTenants} error={null} />)
 
-    const searchInput = screen.getByPlaceholderText(/search/i)
-    fireEvent.change(searchInput, { target: { value: '102' } })
+    const unitInput = screen.getByPlaceholderText(/filter by unit/i)
+    fireEvent.change(unitInput, { target: { value: '102' } })
 
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument()
     expect(screen.getByText('Jane Smith')).toBeInTheDocument()
@@ -91,6 +104,6 @@ describe('TenantsList', () => {
     fireEvent.click(addButton)
 
     // Form should appear
-    expect(screen.getByRole('heading', { name: /add tenant/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /add new tenant/i })).toBeInTheDocument()
   })
 })

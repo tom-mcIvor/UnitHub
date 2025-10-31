@@ -8,20 +8,24 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
-import { createMaintenanceRequest } from "@/app/actions/maintenance"
+import { createMaintenanceRequest, updateMaintenanceRequest } from "@/app/actions/maintenance"
 import { useRouter } from "next/navigation"
 import type { Tenant } from "@/lib/types"
+import type { MaintenanceRequestWithTenant } from "@/app/actions/maintenance"
 
 interface MaintenanceFormProps {
   onClose: () => void
   tenants?: Tenant[]
+  editingRequest?: MaintenanceRequestWithTenant
+  initialData?: MaintenanceRequestFormData
 }
 
-export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps) {
+export function MaintenanceForm({ onClose, tenants = [], editingRequest, initialData }: MaintenanceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const isEditing = !!editingRequest
 
   const {
     register,
@@ -29,6 +33,7 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
     formState: { errors },
   } = useForm<MaintenanceRequestFormData>({
     resolver: zodResolver(maintenanceRequestSchema),
+    defaultValues: initialData,
   })
 
   const onSubmit = async (data: MaintenanceRequestFormData) => {
@@ -44,7 +49,7 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
       formData.append('description', data.description)
       formData.append('category', data.category)
       formData.append('priority', data.priority)
-      formData.append('status', 'open')
+      formData.append('status', isEditing ? (editingRequest.status || 'open') : 'open')
       if (data.estimatedCost) {
         formData.append('estimatedCost', data.estimatedCost.toString())
       }
@@ -52,7 +57,9 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
         formData.append('assignedVendor', data.assignedVendor)
       }
 
-      const result = await createMaintenanceRequest(formData)
+      const result = isEditing
+        ? await updateMaintenanceRequest(editingRequest.id, formData)
+        : await createMaintenanceRequest(formData)
 
       if (result.success) {
         setSuccess(true)
@@ -61,7 +68,7 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
           onClose()
         }, 1000)
       } else {
-        setError(result.error || 'Failed to create maintenance request')
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} maintenance request`)
       }
     } finally {
       setIsSubmitting(false)
@@ -72,7 +79,7 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-border p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-text">New Maintenance Request</h2>
+          <h2 className="text-2xl font-bold text-text">{isEditing ? 'Edit Maintenance Request' : 'New Maintenance Request'}</h2>
           <button onClick={onClose} className="p-1 hover:bg-surface rounded">
             <X size={24} />
           </button>
@@ -87,7 +94,7 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
 
           {success && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">Maintenance request created successfully!</p>
+              <p className="text-green-700 text-sm">Maintenance request {isEditing ? 'updated' : 'created'} successfully!</p>
             </div>
           )}
 
@@ -171,11 +178,11 @@ export function MaintenanceForm({ onClose, tenants = [] }: MaintenanceFormProps)
           </div>
 
           <div className="flex gap-3 justify-end pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Request"}
+            <Button type="submit" disabled={isSubmitting || success}>
+              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Request" : "Create Request"}
             </Button>
           </div>
         </form>

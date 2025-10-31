@@ -3,6 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TenantForm } from '@/components/tenants/tenant-form'
 
+const getInputByLabel = (labelText: string) => {
+  const label = screen.getByText(labelText)
+  const field = label.parentElement?.querySelector('input, textarea')
+  if (!field) {
+    throw new Error(`Unable to find form control for label: ${labelText}`)
+  }
+  return field as HTMLInputElement | HTMLTextAreaElement
+}
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -30,20 +39,20 @@ describe('TenantForm', () => {
   it('renders all form fields', () => {
     render(<TenantForm onClose={mockOnClose} />)
 
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/phone/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/unit number/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/lease start date/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/lease end date/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/rent amount/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/deposit amount/i)).toBeInTheDocument()
+    expect(screen.getByText('Full Name *')).toBeInTheDocument()
+    expect(screen.getByText('Email *')).toBeInTheDocument()
+    expect(screen.getByText('Phone *')).toBeInTheDocument()
+    expect(screen.getByText('Unit Number *')).toBeInTheDocument()
+    expect(screen.getByText('Lease Start Date *')).toBeInTheDocument()
+    expect(screen.getByText('Lease End Date *')).toBeInTheDocument()
+    expect(screen.getByText('Monthly Rent *')).toBeInTheDocument()
+    expect(screen.getByText('Security Deposit *')).toBeInTheDocument()
   })
 
   it('shows validation errors for required fields', async () => {
     render(<TenantForm onClose={mockOnClose} />)
 
-    const submitButton = screen.getByRole('button', { name: /add tenant/i })
+    const submitButton = screen.getByRole('button', { name: /save tenant/i })
     fireEvent.click(submitButton)
 
     await waitFor(() => {
@@ -65,20 +74,20 @@ describe('TenantForm', () => {
     render(<TenantForm onClose={mockOnClose} />)
 
     // Fill out form
-    await user.type(screen.getByLabelText(/name/i), 'John Doe')
-    await user.type(screen.getByLabelText(/email/i), 'john@example.com')
-    await user.type(screen.getByLabelText(/phone/i), '555-1234')
-    await user.type(screen.getByLabelText(/unit number/i), '101')
-    await user.type(screen.getByLabelText(/lease start date/i), '2024-01-01')
-    await user.type(screen.getByLabelText(/lease end date/i), '2025-01-01')
-    await user.type(screen.getByLabelText(/rent amount/i), '1200')
-    await user.type(screen.getByLabelText(/deposit amount/i), '1200')
+    await user.type(getInputByLabel('Full Name *'), 'John Doe')
+    await user.type(getInputByLabel('Email *'), 'john@example.com')
+    await user.type(getInputByLabel('Phone *'), '5551234567')
+    await user.type(getInputByLabel('Unit Number *'), '101')
+    await user.type(getInputByLabel('Lease Start Date *'), '2024-01-01')
+    await user.type(getInputByLabel('Lease End Date *'), '2025-01-01')
+    await user.type(getInputByLabel('Monthly Rent *'), '1200')
+    await user.type(getInputByLabel('Security Deposit *'), '1200')
 
-    const submitButton = screen.getByRole('button', { name: /add tenant/i })
+    const submitButton = screen.getByRole('button', { name: /save tenant/i })
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/tenant added successfully/i)).toBeInTheDocument()
+      expect(screen.getByText(/tenant created successfully/i)).toBeInTheDocument()
     })
   })
 })

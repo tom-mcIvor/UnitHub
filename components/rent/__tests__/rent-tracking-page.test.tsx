@@ -10,6 +10,16 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
+jest.mock('@/app/actions/rent', () => ({
+  deleteRentPayment: jest.fn(() => Promise.resolve({ success: true, error: null })),
+  createRentPayment: jest.fn(),
+  updateRentPayment: jest.fn(),
+}))
+
+jest.mock('@/components/rent/rent-chart', () => ({
+  RentChart: () => <div data-testid="rent-chart" />,
+}))
+
 const mockPayments = [
   {
     id: '123',
@@ -89,7 +99,7 @@ describe('RentTrackingPage', () => {
   it('searches payments by tenant name', () => {
     render(<RentTrackingPage initialPayments={mockPayments} tenants={mockTenants} error={null} />)
 
-    const searchInput = screen.getByPlaceholderText(/search/i)
+    const searchInput = screen.getByPlaceholderText('Search by tenant name or unit...')
     fireEvent.change(searchInput, { target: { value: 'Jane' } })
 
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument()
