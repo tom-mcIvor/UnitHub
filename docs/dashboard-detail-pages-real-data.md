@@ -63,19 +63,20 @@ Converted to async Server Component:
 **`/components/tenants/tenant-detail.tsx`**
 - Changed from mock data to accepting `tenant: Tenant` prop
 - Updated all field references to camelCase fields provided by server actions
-- Added edit modal support via `<TenantForm>` with pre-populated data
+- ✅ **Added edit modal support** (2025-10-31): Edit button now opens `<TenantForm>` with pre-populated data
 
 ### 5. Maintenance Detail Page Fixed (`/app/maintenance/[id]/page.tsx`)
 
 Converted to async Server Component:
 - Calls `getMaintenanceRequest(id)` server action (now in parallel with `getTenants()`)
+- ✅ **Fetches tenants in parallel** (2025-10-31): Added for edit modal dropdown
 - Added `export const dynamic = 'force-dynamic'`
 - Changed params type to `Promise<{ id: string }>`
 - Returns `notFound()` if request not found or error occurs
 
 **`/components/maintenance/maintenance-detail.tsx`**
 - Changed from mock data to accepting `request: MaintenanceRequestWithTenant` prop
-- Added edit modal support via `<MaintenanceForm>` using live tenant data for dropdowns
+- ✅ **Added edit modal support** (2025-10-31): Edit button opens `<MaintenanceForm>` using live tenant data
 - Maintains formatting helpers for status, priority, and cost display
 
 ---
@@ -292,5 +293,6 @@ Not implemented - manual types work but could drift from database.
 2. Add Row Level Security policies to database
 3. Add `user_id` column to all tables and update queries
 4. Add loading states to async pages
-5. Wire up Edit buttons in detail pages
-6. Add server-side validation with Zod
+5. ✅ ~~Wire up Edit buttons in detail pages~~ - **Completed 2025-10-31** (see `docs/edit-modals-and-test-stabilization.md`)
+6. Add optimistic UI updates for edit modal submissions
+7. Add server-side validation with Zod

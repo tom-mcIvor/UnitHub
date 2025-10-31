@@ -119,6 +119,7 @@ describe('AICategorization', () => {
     await user.click(screen.getByText('Apply'))
 
     expect(mockOnApply).toHaveBeenCalledWith({
+      success: true,
       category: 'Plumbing',
       priority: 'medium',
       estimatedCost: 150,
