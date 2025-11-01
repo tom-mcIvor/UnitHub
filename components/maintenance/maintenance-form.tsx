@@ -37,8 +37,6 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
   })
 
   const onSubmit = async (data: MaintenanceRequestFormData) => {
-    console.log("Form data:", data);
-    console.log("Form data:", data);
     setIsSubmitting(true)
     setError(null)
     setSuccess(false)
@@ -64,7 +62,6 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
         : await createMaintenanceRequest(formData)
 
       if (result.success) {
-        console.log("Submission successful");
         setSuccess(true)
         router.refresh()
         setTimeout(() => {
@@ -176,7 +173,20 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
 
             <div>
               <label htmlFor="estimatedCost" className="block text-sm font-medium text-text mb-2">Estimated Cost</label>
-              <Input id="estimatedCost" {...register("estimatedCost", { valueAsNumber: true })} type="number" placeholder="0.00" />
+              <Input
+                id="estimatedCost"
+                {...register("estimatedCost", {
+                  setValueAs: (value) => {
+                    if (value === '' || value === null || value === undefined) {
+                      return undefined
+                    }
+                    const parsed = Number(value)
+                    return Number.isNaN(parsed) ? undefined : parsed
+                  },
+                })}
+                type="number"
+                placeholder="0.00"
+              />
             </div>
           </div>
 

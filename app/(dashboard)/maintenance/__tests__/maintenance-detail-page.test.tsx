@@ -1,13 +1,9 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import MaintenanceDetailPage from '@/app/maintenance/[id]/page'
+import MaintenanceDetailPage from '@/app/(dashboard)/maintenance/[id]/page'
 import { getMaintenanceRequest } from '@/app/actions/maintenance'
 
 const mockMaintenanceDetail = jest.fn(() => <div data-testid="maintenance-detail" />)
-
-jest.mock('@/components/layout/dashboard-layout', () => ({
-  DashboardLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>,
-}))
 
 jest.mock('@/components/maintenance/maintenance-detail', () => ({
   MaintenanceDetail: (props: any) => mockMaintenanceDetail(props),
@@ -63,7 +59,6 @@ describe('MaintenanceDetailPage', () => {
     const element = await MaintenanceDetailPage({ params: Promise.resolve({ id: 'req-1' }) })
     render(element)
 
-    expect(screen.getByTestId('layout')).toBeInTheDocument()
     expect(mockMaintenanceDetail).toHaveBeenCalledWith({ request: maintenanceResponse.data, tenants: [] })
   })
 

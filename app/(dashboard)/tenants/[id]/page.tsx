@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { TenantDetail } from "@/components/tenants/tenant-detail"
 import { getTenant } from "@/app/actions/tenants"
 import { notFound } from "next/navigation"
@@ -13,9 +12,5 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
     notFound()
   }
 
-  return (
-    <DashboardLayout>
-      <TenantDetail tenant={tenant} />
-    </DashboardLayout>
-  )
+  return <TenantDetail tenant={tenant} />
 }

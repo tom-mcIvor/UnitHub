@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview"
 import {
   getDashboardStats,
@@ -19,14 +18,12 @@ export default async function Home() {
   ])
 
   return (
-    <DashboardLayout>
-      <DashboardOverview
-        stats={statsResult.data}
-        recentTenants={tenantsResult.data || []}
-        upcomingPayments={paymentsResult.data || []}
-        recentMaintenance={maintenanceResult.data || []}
-        error={statsResult.error || tenantsResult.error || paymentsResult.error || maintenanceResult.error}
-      />
-    </DashboardLayout>
+    <DashboardOverview
+      stats={statsResult.data}
+      recentTenants={tenantsResult.data || []}
+      upcomingPayments={paymentsResult.data || []}
+      recentMaintenance={maintenanceResult.data || []}
+      error={statsResult.error || tenantsResult.error || paymentsResult.error || maintenanceResult.error}
+    />
   )
 }

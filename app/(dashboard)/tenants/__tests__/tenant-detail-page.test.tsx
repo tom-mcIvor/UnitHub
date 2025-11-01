@@ -1,13 +1,9 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import TenantDetailPage from '@/app/tenants/[id]/page'
+import TenantDetailPage from '@/app/(dashboard)/tenants/[id]/page'
 import { getTenant } from '@/app/actions/tenants'
 
 const mockTenantDetail = jest.fn(() => <div data-testid="tenant-detail" />)
-
-jest.mock('@/components/layout/dashboard-layout', () => ({
-  DashboardLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>,
-}))
 
 jest.mock('@/components/tenants/tenant-detail', () => ({
   TenantDetail: (props: any) => mockTenantDetail(props),
@@ -57,7 +53,6 @@ describe('TenantDetailPage', () => {
     const element = await TenantDetailPage({ params: Promise.resolve({ id: 'tenant-1' }) })
     render(element)
 
-    expect(screen.getByTestId('layout')).toBeInTheDocument()
     expect(mockTenantDetail).toHaveBeenCalledWith({ tenant: tenantResponse.data })
   })
 

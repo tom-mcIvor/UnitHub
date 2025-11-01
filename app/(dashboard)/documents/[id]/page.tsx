@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { DocumentDetail } from "@/components/documents/document-detail"
 import { getDocument } from "@/app/actions/documents"
 import { getTenants } from "@/app/actions/tenants"
@@ -15,9 +14,5 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
     notFound()
   }
 
-  return (
-    <DashboardLayout>
-      <DocumentDetail document={document} tenants={tenants || []} />
-    </DashboardLayout>
-  )
+  return <DocumentDetail document={document} tenants={tenants || []} />
 }

@@ -83,4 +83,9 @@ The testing roadmap is your complete testing guide containing:
 
 ---
 
+error on starting up the app with npm run dev:  
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 5.6s
+
 **Last Updated**: 2025-10-31

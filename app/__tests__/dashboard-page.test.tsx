@@ -1,16 +1,12 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import Home from '@/app/page'
+import Home from '@/app/(dashboard)/page'
 import {
   getDashboardStats,
   getRecentTenants,
   getUpcomingPayments,
   getRecentMaintenanceRequests,
 } from '@/app/actions/dashboard'
-
-jest.mock('@/components/layout/dashboard-layout', () => ({
-  DashboardLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="layout">{children}</div>,
-}))
 
 const mockDashboardOverview = jest.fn(() => <div data-testid="dashboard-overview" />)
 
@@ -89,7 +85,6 @@ describe('Home dashboard page', () => {
     const element = await Home()
     render(element)
 
-    expect(screen.getByTestId('layout')).toBeInTheDocument()
     expect(mockDashboardOverview).toHaveBeenCalledTimes(1)
     expect(mockDashboardOverview).toHaveBeenCalledWith({
       stats: statsPayload.data,

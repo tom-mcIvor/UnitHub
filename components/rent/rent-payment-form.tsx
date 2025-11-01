@@ -23,6 +23,8 @@ interface RentPaymentFormProps {
 
 export function RentPaymentForm({ onClose, tenants = [], editingPayment, initialData }: RentPaymentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingPayment
 
@@ -37,6 +39,8 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
 
   const onSubmit = async (data: RentPaymentFormData) => {
     setIsSubmitting(true)
+    setError(null)
+    setSuccess(false)
 
     try {
       // Convert to FormData for server action
@@ -56,13 +60,18 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
 
       if (result.success) {
         toast.success(`Payment ${isEditing ? 'updated' : 'recorded'} successfully`)
+        setSuccess(true)
         router.refresh()
-        onClose()
+        setTimeout(() => {
+          onClose()
+        }, 800)
       } else {
         toast.error(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
+        setError(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
       }
     } catch (error) {
       toast.error('An unexpected error occurred')
+      setError('An unexpected error occurred')
     } finally {
       setIsSubmitting(false)
     }

@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { MaintenanceDetail } from "@/components/maintenance/maintenance-detail"
 import { getMaintenanceRequest } from "@/app/actions/maintenance"
 import { getTenants } from "@/app/actions/tenants"
@@ -17,9 +16,5 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
     notFound()
   }
 
-  return (
-    <DashboardLayout>
-      <MaintenanceDetail request={request} tenants={tenants || []} />
-    </DashboardLayout>
-  )
+  return <MaintenanceDetail request={request} tenants={tenants || []} />
 }

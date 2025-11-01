@@ -115,7 +115,7 @@ export async function getRecentTenants(): Promise<{
 
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, name, unit_number, lease_start, created_at')
+      .select('id, name, unit_number, lease_start:lease_start_date, created_at')
       .order('created_at', { ascending: false })
       .limit(4)
 
