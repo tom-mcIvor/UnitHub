@@ -28,10 +28,13 @@ function mapDbToTenant(row: any): Tenant {
 export async function getTenants(): Promise<{ data: Tenant[] | null; error: string | null }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -51,11 +54,14 @@ export async function getTenants(): Promise<{ data: Tenant[] | null; error: stri
 export async function getTenant(id: string): Promise<{ data: Tenant | null; error: string | null }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('tenants')
       .select('*')
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -74,6 +80,8 @@ export async function getTenant(id: string): Promise<{ data: Tenant | null; erro
 export async function createTenant(formData: FormData): Promise<{ success: boolean; error: string | null; data?: Tenant }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = tenantSchema.safeParse({
@@ -106,6 +114,7 @@ export async function createTenant(formData: FormData): Promise<{ success: boole
           deposit_amount: depositAmount,
           pet_policy: petPolicy || '',
           notes: notes || '',
+          user_id: user.id,
         },
       ])
       .select()
@@ -131,6 +140,8 @@ export async function createTenant(formData: FormData): Promise<{ success: boole
 export async function updateTenant(id: string, formData: FormData): Promise<{ success: boolean; error: string | null; data?: Tenant }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = tenantSchema.safeParse({
@@ -165,6 +176,7 @@ export async function updateTenant(id: string, formData: FormData): Promise<{ su
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -189,11 +201,14 @@ export async function updateTenant(id: string, formData: FormData): Promise<{ su
 export async function deleteTenant(id: string): Promise<{ success: boolean; error: string | null }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const { error } = await supabase
       .from('tenants')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error deleting tenant:', error)

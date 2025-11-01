@@ -79,3 +79,52 @@ CREATE INDEX IF NOT EXISTS idx_maintenance_tenant ON maintenance_requests(tenant
 CREATE INDEX IF NOT EXISTS idx_maintenance_status ON maintenance_requests(status);
 CREATE INDEX IF NOT EXISTS idx_documents_tenant ON documents(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_communication_tenant ON communication_logs(tenant_id);
+
+-- Add user_id columns for multi-tenancy
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE rent_payments ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE maintenance_requests ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+ALTER TABLE communication_logs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+
+-- Create indexes on user_id columns for better query performance
+CREATE INDEX IF NOT EXISTS idx_tenants_user ON tenants(user_id);
+CREATE INDEX IF NOT EXISTS idx_rent_payments_user ON rent_payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_maintenance_user ON maintenance_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_user ON documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_communication_user ON communication_logs(user_id);
+
+-- Enable Row Level Security
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rent_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communication_logs ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS tenants_user_policy ON tenants;
+DROP POLICY IF EXISTS rent_payments_user_policy ON rent_payments;
+DROP POLICY IF EXISTS maintenance_user_policy ON maintenance_requests;
+DROP POLICY IF EXISTS documents_user_policy ON documents;
+DROP POLICY IF EXISTS communication_user_policy ON communication_logs;
+
+-- Create RLS Policies - users can only access their own data
+CREATE POLICY tenants_user_policy ON tenants
+  FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE POLICY rent_payments_user_policy ON rent_payments
+  FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE POLICY maintenance_user_policy ON maintenance_requests
+  FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE POLICY documents_user_policy ON documents
+  FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE POLICY communication_user_policy ON communication_logs
+  FOR ALL
+  USING (auth.uid() = user_id);

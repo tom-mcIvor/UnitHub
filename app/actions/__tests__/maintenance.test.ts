@@ -63,11 +63,31 @@ const createSupabaseMock = () => {
   const updateSingle = jest.fn()
   const deleteEq = jest.fn()
 
+  const mockUser = {
+    id: 'test-user-id-123',
+    email: 'test@example.com',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '2024-01-01T00:00:00.000Z',
+  }
+
+  const auth = {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    }),
+  }
+
   const from = jest.fn(() => ({
     select: jest.fn(() => ({
       order,
       eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: selectSingle,
+        })),
         single: selectSingle,
+        order,
       })),
       single: selectSingle,
     })),
@@ -78,24 +98,33 @@ const createSupabaseMock = () => {
     })),
     update: jest.fn(() => ({
       eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: updateSingle,
+          })),
+        })),
         select: jest.fn(() => ({
           single: updateSingle,
         })),
       })),
     })),
     delete: jest.fn(() => ({
-      eq: deleteEq,
+      eq: jest.fn(() => ({
+        eq: deleteEq,
+      })),
     })),
   }))
 
   return {
-    client: { from },
+    client: { from, auth },
     order,
     selectSingle,
     insertSingle,
     updateSingle,
     deleteEq,
     from,
+    auth,
+    mockUser,
   }
 }
 

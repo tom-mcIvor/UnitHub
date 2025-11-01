@@ -46,6 +46,8 @@ export async function getMaintenanceRequests(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('maintenance_requests')
@@ -56,6 +58,7 @@ export async function getMaintenanceRequests(): Promise<{
           unit_number
         )
       `)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -78,6 +81,8 @@ export async function getMaintenanceRequest(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('maintenance_requests')
@@ -89,6 +94,7 @@ export async function getMaintenanceRequest(id: string): Promise<{
         )
       `)
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -111,6 +117,8 @@ export async function createMaintenanceRequest(formData: FormData): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = maintenanceRequestSchema.safeParse({
@@ -142,6 +150,7 @@ export async function createMaintenanceRequest(formData: FormData): Promise<{
         estimated_cost: estimatedCost || null,
         assigned_vendor: assignedVendor || null,
         photos: [],
+        user_id: user.id,
       })
       .select()
       .single()
@@ -184,6 +193,8 @@ export async function updateMaintenanceRequest(
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = maintenanceRequestSchema.safeParse({
@@ -217,6 +228,7 @@ export async function updateMaintenanceRequest(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -254,11 +266,14 @@ export async function deleteMaintenanceRequest(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const { error } = await supabase
       .from('maintenance_requests')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error deleting maintenance request:', error)

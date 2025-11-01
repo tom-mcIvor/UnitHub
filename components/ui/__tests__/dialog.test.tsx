@@ -39,13 +39,15 @@ describe('Dialog Components', () => {
   it('should render Dialog components with custom classNames', () => {
     render(
       <Dialog open>
-        <DialogContent className="custom-content">
+        <DialogContent className="custom-content" showCloseButton={false}>
           <DialogHeader className="custom-header">
             <DialogTitle className="custom-title">Dialog Title</DialogTitle>
             <DialogDescription className="custom-description">Dialog Description</DialogDescription>
           </DialogHeader>
           <DialogFooter className="custom-footer">
-            <DialogClose className="custom-close" />
+            <DialogClose asChild>
+              <button className="custom-close">Close</button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -39,6 +39,8 @@ export async function getCommunicationLogs(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('communication_logs')
@@ -51,6 +53,7 @@ export async function getCommunicationLogs(): Promise<{
         )
       `
       )
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -73,6 +76,8 @@ export async function getCommunicationLog(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('communication_logs')
@@ -86,6 +91,7 @@ export async function getCommunicationLog(id: string): Promise<{
       `
       )
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -108,6 +114,8 @@ export async function createCommunicationLog(formData: FormData): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = communicationLogSchema.safeParse(rawData)
@@ -131,6 +139,7 @@ export async function createCommunicationLog(formData: FormData): Promise<{
         type,
         subject,
         content,
+        user_id: user.id,
       })
       .select()
       .single()
@@ -173,6 +182,8 @@ export async function updateCommunicationLog(
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = communicationLogSchema.safeParse(rawData)
@@ -198,6 +209,7 @@ export async function updateCommunicationLog(
         content,
       })
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -235,11 +247,14 @@ export async function deleteCommunicationLog(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const { error } = await supabase
       .from('communication_logs')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error deleting communication log:', error)
