@@ -1,8 +1,8 @@
 # Testing Best Practices Guide
 
 **UnitHub Testing Documentation**
-**Last Updated**: 2025-11-01 (Toast Notification Tests)
-**Current Test Coverage**: 274 tests passing, 27 tests failing
+**Last Updated**: 2025-11-02 (Multi-Tenancy & Google OAuth Tests)
+**Current Test Coverage**: 303/303 tests passing (100%)
 
 ---
 
@@ -15,15 +15,7 @@
 5. [How to Write Tests](#how-to-write-tests)
 6. [Running Tests](#running-tests)
 7. [Debugging Failed Tests](#debugging-failed-tests)
-8. [Known Issues](#known-issues)
-
----
-
-## Known Issues
-
-- `components/ui/__tests__/dialog.test.tsx`: This test is failing because it cannot find an element with the text "Close" inside an element with the attribute `data-slot="dialog-footer"`.
-- `app/actions/__tests__/documents.test.ts`: These tests are failing because the server actions are returning an error message instead of `null`.
-- `app/actions/__tests__/rent.test.ts`: These tests are failing because the server actions are returning an error message instead of `null`.
+8. [Auth Testing Patterns](#auth-testing-patterns)
 
 ---
 
@@ -708,29 +700,95 @@ For component tests failing with `Request is not defined`:
 
 ---
 
+---
+
+## Auth Testing Patterns
+
+After implementing multi-tenancy and Google OAuth, all server action tests require auth mocks.
+
+### Pattern: Mock Supabase Auth
+
+```typescript
+const createSupabaseMock = () => {
+  const mockUser = {
+    id: 'test-user-id-123',
+    email: 'test@example.com',
+    aud: 'authenticated',
+    role: 'authenticated',
+  }
+
+  return {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({ data: [...], error: null })),
+      })),
+    })),
+    auth: {
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      }),
+    },
+  }
+}
+```
+
+### Pattern: Chain `.eq()` for user_id Filtering
+
+All queries now include `.eq('user_id', user.id)`, so mocks must support chaining:
+
+```typescript
+const chain: any = {}
+chain.eq = jest.fn(() => chain)
+chain.order = jest.fn(() => chain)
+chain.limit = jest.fn(() => ({ data: [...], error: null }))
+
+return { select: jest.fn(() => chain) }
+```
+
+### Pattern: Test Unauthenticated Access
+
+```typescript
+it('should return error when user not authenticated', async () => {
+  const mockSupabase = {
+    auth: {
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: null },
+        error: { message: 'Not authenticated' },
+      }),
+    },
+  }
+
+  const result = await getTenants()
+
+  expect(result.success).toBe(false)
+  expect(result.error).toBe('User not authenticated')
+})
+```
+
+See `app/actions/__tests__/dashboard.test.ts` for a complete working example.
+
+---
+
 ## Summary
 
-**Current Status**: 274/301 tests passing (91% pass rate)
+**Current Status**: 303/303 tests passing (100% pass rate)
 
-- **What's Working**:
-- Server action suites now span 77 tests, covering success and failure paths for tenants, rent, maintenance, documents, communications, and dashboards.
-- Component tests for tenants, rent, dashboard, maintenance, documents, communications, and settings remain stable.
-- Layout component tests (sidebar, header, dashboard layout) pass with router stubs.
-- Page component tests (dashboard + feature pages) still verified.
-- App layout tests (root + dashboard wrapper) solidified.
-- Dynamic document page tests and download API proxy coverage maintained.
-- UI primitives smoke tests (14 components) ensure basic render coverage.
-- Supabase and Next.js cache mocks shared via helpers.
-- Fast test execution (~20s for 289 tests) when run with `--runInBand`.
+**What's Working**:
+- All server action tests updated with auth.getUser() mocks
+- Multi-tenancy user_id filtering tested in dashboard actions
+- Component tests for tenants, rent, dashboard, maintenance, documents, communications, settings stable
+- Layout component tests (sidebar, header, dashboard layout) include new SignUpForm mock
+- All 58 test suites passing
+- Auth state listener pattern tested (no flash rendering)
 
-**What Needs Work**:
-- Coverage at 57.62% (target 60%+, need +2.38%).
-- UI primitives at ~15% (50+ components, many wrappers untested).
-- Auth pages remain untested (0% coverage).
-- No integration or E2E tests yet.
-- Maintenance server actions still use older mocks and miss some failure branches.
-- No visual regression testing.
-- `npm run test:coverage` still crashes without `--runInBand`.
+**What Still Needs Work**:
+- Auth component tests missing (SignInForm, SignUpForm)
+- OAuth callback route tests missing
+- Integration tests for multi-tenancy isolation
+- RLS policy testing
+- E2E tests for Google OAuth flow
+- Visual regression testing
 
 **Key Principle**: **Test behavior, not implementation**
 

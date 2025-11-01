@@ -1,44 +1,40 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Updated**: 2025-11-01
-**Current Status**: 276/303 tests passing (91%)
-**Current Coverage**: 54.83% overall (target: 60%+)
+**Updated**: 2025-11-02
+**Current Status**: 303/303 tests passing (100%)
+**Current Coverage**: ~55% overall (target: 60%+)
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
 >
-> **Latest**: Added tests for the `Card` and `Dialog` UI components. The `Dialog` component tests are currently failing. See [dialog-component-testing.md](./dialog-component-testing.md) for more details.
+> **Latest**: All tests passing after multi-tenancy and Google OAuth implementation. Auth component tests and OAuth callback tests still needed. See [google-oauth-multi-tenancy-implementation.md](./google-oauth-multi-tenancy-implementation.md) for details.
 
 ---
 
 ## 📊 Current Status
 
-**Test Results**: 276 passing / 303 total (91% pass rate) ⚠️
-- **Server Actions**: Failing ❌
-- **Components**: Mostly passing ✅ (dialog.test.tsx failing)
+**Test Results**: 303 passing / 303 total (100% pass rate) ✅
+- **Server Actions**: All passing ✅ (with auth.getUser() mocks)
+- **Components**: All passing ✅
 - **Pages**: All passing ✅
 - **API Routes**: All passing ✅
 - **Layout Components**: All passing ✅
 - **App Layouts**: All passing ✅
 - **Dynamic Pages**: All passing ✅
-- **UI Primitives**: Partially tested, `dialog.test.tsx` is failing.
+- **UI Primitives**: Partially tested ⚠️ (smoke tests only)
 
-**Coverage**: 54.83% overall
+**Coverage**: ~55% overall
 
-### ⚠️ Failing Tests
-
-The following test suites are currently failing:
-
-*   `components/ui/__tests__/dialog.test.tsx`
-*   `app/actions/__tests__/documents.test.ts`
-*   `app/actions/__tests__/rent.test.ts`
-
-The server action tests (`documents.test.ts`, `rent.test.ts`, and others) are failing due to a recent change in the application code that introduced user authentication checks. The test mocks have not been updated to handle this change. See the "Existing Problems" section in the relevant documentation for more details.
+### ✅ Recently Fixed
+- All server action tests updated with auth mocks after multi-tenancy implementation
+- Dashboard tests support `.eq()` chaining for user_id filtering
+- Dialog test fixed with SignUpForm mock
+- All 58 test suites passing
 
 ### ✅ Completed
 - [x] Jest & RTL setup
-- [x] Server action tests (tenants, rent, maintenance, documents, communications, dashboard) - **Note: These are currently failing due to authentication changes.**
+- [x] Server action tests (tenants, rent, maintenance, documents, communications, dashboard) with auth mocks
 - [x] Component tests (tenant/rent/dashboard/maintenance suites)
 - [x] Test documentation
 - [x] Co-located test structure
@@ -69,7 +65,9 @@ The server action tests (`documents.test.ts`, `rent.test.ts`, and others) are fa
 - [x] Added tests for `Dialog` component.
 
 ### 🚧 In Progress
-- [ ] Fix failing `dialog.test.tsx` test.
+- [ ] Auth component tests (SignInForm, SignUpForm)
+- [ ] OAuth callback route tests
+- [ ] Multi-tenancy integration tests
 - [ ] Increase coverage to 60%+
 
 ### ❌ Not Started
@@ -477,6 +475,158 @@ describe(\'Tenants Page\', () => {
 4. Mobile responsive behavior
 
 **Expected Coverage**: 60%+ for layouts
+
+---
+
+## Phase 2.5: Authentication & Multi-Tenancy Testing
+
+**Goal**: Test authentication flows and multi-tenancy isolation
+**Duration**: 2-3 days
+**Target Coverage Increase**: 50% → 55%
+**Priority**: P1
+
+### 2.5.1 Test Auth Components
+**Priority**: P0
+**Estimated Time**: 1 day
+
+**Components to Test**:
+- `components/auth/sign-in-form.tsx`
+- `components/auth/sign-up-form.tsx`
+
+**SignInForm Tests** (`components/auth/__tests__/sign-in-form.test.tsx`):
+1. Renders email/password form correctly
+2. Shows validation errors for invalid inputs
+3. Calls `onSignedIn` callback after successful sign-in
+4. Displays error message on sign-in failure
+5. Google OAuth button triggers `signInWithOAuth`
+6. `onSwitchToSignUp` callback works correctly
+7. Loading state during sign-in
+8. Does NOT call getSession() on mount (flash rendering regression test)
+9. `onAuthStateChange` listener subscribes and unsubscribes correctly
+
+**SignUpForm Tests** (`components/auth/__tests__/sign-up-form.test.tsx`):
+1. Renders email/password/confirm password form
+2. Validates passwords match
+3. Shows "Passwords do not match" error when they differ
+4. Calls `onSignedUp` callback after successful sign-up
+5. Displays "Check your email to verify" message after sign-up
+6. Google OAuth button triggers `signInWithOAuth`
+7. `onSwitchToSignIn` callback works correctly
+8. Loading state during sign-up
+9. Does NOT call getSession() on mount
+
+**Expected Coverage**: 80%+ for auth components
+
+---
+
+### 2.5.2 Test OAuth Callback Route
+**Priority**: P0
+**Estimated Time**: 4 hours
+
+**File**: `app/auth/callback/__tests__/route.test.ts`
+
+**Test Cases**:
+1. Successful code exchange redirects to `/` (home)
+2. Failed code exchange redirects to `/auth/login?message=error`
+3. Missing code parameter redirects with error message
+4. Invalid code returns Supabase error and redirects to login
+5. Unexpected errors are logged and handled gracefully
+
+**Mock Structure**:
+```typescript
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      exchangeCodeForSession: jest.fn(),
+    },
+  })),
+}))
+
+jest.mock('next/server', () => ({
+  NextResponse: {
+    redirect: jest.fn(),
+  },
+}))
+```
+
+**Expected Coverage**: 90%+ for OAuth callback
+
+---
+
+### 2.5.3 Test Multi-Tenancy Isolation
+**Priority**: P1
+**Estimated Time**: 1 day
+
+**Server Action Tests** (add to existing test files):
+
+Each server action should have tests for:
+1. **User ID filtering**: Verify `.eq('user_id', user.id)` is called
+2. **Unauthenticated access**: Returns error when `auth.getUser()` fails
+3. **Cross-user access prevention**: Mock different user IDs, verify data isolation
+
+**Example Test Pattern**:
+```typescript
+describe('Multi-tenancy', () => {
+  it('should only return data for authenticated user', async () => {
+    const mockUser1 = { id: 'user-1' }
+    const mockUser2 = { id: 'user-2' }
+
+    // Create tenant as user-1
+    const tenant = await createTenant(formData) // with user-1 auth
+
+    // Try to fetch as user-2
+    mockSupabase.auth.getUser.mockResolvedValue({
+      data: { user: mockUser2 }
+    })
+    const result = await getTenants()
+
+    // Verify user-2 doesn't see user-1's tenant
+    expect(result.data).not.toContainEqual(
+      expect.objectContaining({ id: tenant.data.id })
+    )
+  })
+
+  it('should return error when user not authenticated', async () => {
+    mockSupabase.auth.getUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'Not authenticated' },
+    })
+
+    const result = await getTenants()
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('User not authenticated')
+  })
+})
+```
+
+**Files to Update**:
+- `app/actions/__tests__/tenants.test.ts`
+- `app/actions/__tests__/maintenance.test.ts`
+- `app/actions/__tests__/communications.test.ts`
+- `app/actions/__tests__/documents.test.ts`
+- `app/actions/__tests__/rent.test.ts`
+
+**Expected Coverage**: 95%+ for auth-related code paths
+
+---
+
+### 2.5.4 Test Dashboard Auth Dialog Switching
+**Priority**: P2
+**Estimated Time**: 2 hours
+
+**Component**: `components/layout/dashboard-layout.tsx`
+
+**Additional Tests**:
+1. Switching from sign-in to sign-up dialog updates state
+2. Switching from sign-up to sign-in dialog updates state
+3. Successful sign-in closes dialog
+4. Successful sign-up closes dialog
+5. DialogTitle present for accessibility
+
+**File**: `components/layout/__tests__/dashboard-layout.test.tsx`
+
+**Expected Coverage**: 85%+ for dashboard layout
 
 ---
 

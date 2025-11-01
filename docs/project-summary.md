@@ -159,16 +159,19 @@ The codebase is structured to easily extend with:
 - Mobile app
 - Additional AI features (communication assistant, predictive analytics, photo analysis)
 
-### 8. Authentication
-- Basic authentication system using Supabase Auth.
-- Middleware to protect all routes.
-- Login, signup, and callback pages.
-- Reusable `SignInForm` component powers both the dedicated login route and the in-app modal launched from the dashboard header, keeping users in flow while signing in.
+### 8. Authentication & Multi-Tenancy
+- **Supabase Auth** with email/password and Google OAuth sign-in/sign-up
+- **Row Level Security (RLS)** policies ensure users only access their own data
+- **Multi-tenancy** implemented via user_id filtering on all tables (tenants, rent_payments, maintenance_requests, documents, communication_logs)
+- **SignInForm** and **SignUpForm** components with dialog switching in dashboard
+- OAuth callback handler at `/auth/callback` for Google sign-in flow
+- Auth checks in all server actions return error if user not authenticated
+- See `docs/google-oauth-multi-tenancy-implementation.md` for details
 
 ### 9. Testing Infrastructure
 - **Jest** with React Testing Library for unit/component testing
-- **274/301 tests** covering server actions, components, pages, layouts, API routes, and UI primitives
-- **91% test pass rate** (274/301 passing)
+- **303/303 tests passing** covering server actions, components, pages, layouts, API routes, and UI primitives
+- **100% test pass rate** (all tests passing after multi-tenancy implementation)
 - Form tests updated to use `toast` notifications for a better user experience.
 - Test coverage areas:
   - Settings: 100% coverage
@@ -203,4 +206,4 @@ The codebase is structured to easily extend with:
 
 ---
 
-**Status**: Core MVP features complete, but there are failing tests that need to be addressed before proceeding with Supabase integration, RLS policies, and deployment.
+**Status**: Core MVP features complete with multi-tenancy and Google OAuth. All 303 tests passing. Ready for production deployment after database migration is applied (see `docs/google-oauth-multi-tenancy-implementation.md`).
