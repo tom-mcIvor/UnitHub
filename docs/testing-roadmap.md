@@ -1,36 +1,45 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Updated**: 2025-11-01 (Test Expansion Session 2)
-**Current Status**: 163/163 tests passing (100%)
-**Current Coverage**: 36.57% overall (target: 60%+)
+**Updated**: 2025-11-01 (Server Action Edge Cases + Coverage Push)
+**Current Status**: 243/243 tests passing (100%)
+**Current Coverage**: 55.05% overall (target: 60%+)
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
 >
-> **Latest**: Added 21 tests for settings, communications, maintenance pages, rent chart, theme provider. See [test-expansion-session-2-2025-11-01.md](./test-expansion-session-2-2025-11-01.md) for details.
+> **Latest**: Rent server action edge-case suite (10 tests) pushed `rent.ts` to 100% coverage and raised overall coverage to 55.05%. See [test-expansion-2025-11-01-server-actions.md](./test-expansion-2025-11-01-server-actions.md) for the session log, plus [test-expansion-2025-11-01-coverage-push.md](./test-expansion-2025-11-01-coverage-push.md) for earlier additions.
 
 ---
 
 ## 📊 Current Status
 
-**Test Results**: 163 passing / 163 total (100% pass rate) ✅
+**Test Results**: 243 passing / 243 total (100% pass rate) ✅
 - **Server Actions**: All passing ✅
 - **Components**: All passing ✅
 - **Pages**: All passing ✅
 - **API Routes**: All passing ✅
 - **Layout Components**: All passing ✅
+- **App Layouts**: All passing ✅
+- **Dynamic Pages**: All passing ✅
+- **UI Primitives**: All passing ✅
 
-**Coverage**: 36.57% overall (+4.52% from last session)
+**Coverage**: 55.05% overall (+1.45% from server action session, +18.42% total from baseline)
 - Settings: 100% ✅
+- Dashboard layout: 100% ✅ (NEW)
 - Layout components: 89.47% ✅
 - Dashboard components: 88.09% ✅
+- App layout: 87.5% ✅ (NEW - was 0%)
+- Document components: 83.84% ✅
+- Rent components: 77.77% ✅
 - Maintenance components: 75.3% ✅
 - Tenants components: 73.83% ✅
-- Server actions: 69.19%
-- Rent components: 60.71%
-- Communications components: 47.74%
-- Document components: 0% ❌
+- Communications components: 71.81% ✅
+- Server actions: 76.78%
+- Loading routes (`app/(dashboard)/*/loading.tsx`): 100% (documents, rent, maintenance, communications, tenants)
+- Documents [id] page: ~90% ✅ (NEW - was 0%)
+- Download API route: ~75% ✅ (NEW - was 0%)
+- UI primitives (`components/ui/**`): ~15%
 - AI API routes: 100% ✅
 
 ### ✅ Completed
@@ -49,10 +58,19 @@
 - [x] Maintenance page tests - Session 2
 - [x] Rent chart tests - Session 2
 - [x] Theme provider tests - Session 2
-- [x] All 163 tests passing (100% pass rate) - Session 2
+- [x] Documents workflow tests (page, upload modal, form, detail, lease extractor) - Documents expansion
+- [x] Rent payment reminder generator tests - Documents expansion
+- [x] Communications form tests - Documents expansion
+- [x] Dashboard loading state smoke tests - Documents expansion
+- [x] App layout tests (root layout, dashboard wrapper) - Coverage push
+- [x] Dynamic document page tests ([id]/page.tsx) - Coverage push
+- [x] Document download API route tests - Coverage push
+- [x] UI primitives smoke tests (14 components) - Coverage push
+- [x] Rent server action edge cases (getRentPayment, error paths) - Server action session
+- [x] All 243 tests passing (100% pass rate) - Server action session
 
 ### 🚧 In Progress
-- [ ] Increase coverage to 60%+ (currently 36.57%, need +23.43%)
+- [ ] Increase coverage to 60%+ (currently 55.05%, need +4.95%)
 
 ### ❌ Not Started
 - [ ] Integration tests
@@ -135,6 +153,7 @@ After running `npm run test:coverage`:
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
 - **[Test Expansion Session 1](./test-expansion-2025-11-01.md)** - Layout component tests (2025-11-01)
 - **[Test Expansion Session 2](./test-expansion-session-2-2025-11-01.md)** - Page components, charts, theme (2025-11-01)
+- **[Test Expansion – Documents Workflow](./test-expansion-documents-workflow.md)** - Documents UI + AI reminder coverage (2025-11)
 - **[Test Fixes and Payment Status](./test-fixes-and-payment-status.md)** - Historical test stabilization
 - **[Test Memory Optimization](./test-memory-optimization.md)** - Memory configuration notes
 
@@ -169,28 +188,23 @@ After running `npm run test:coverage`:
 ## Current State Details
 
 ### ✅ What's Working
-- **Server Actions**: 30 tests, 60-74% coverage
-  - Tenants (6 tests)
-  - Rent (5 tests)
-  - Maintenance (6 tests)
-  - Documents (7 tests)
-  - Communications (6 tests)
-- **Component Tests**: 23 tests passing but 0% coverage counted
-  - Tenant form & list (11 tests)
-  - Rent payment form & tracking page (12 tests)
+- **Rent server actions** now sit at 100% coverage with full error-path validation.
+- **Server actions overall** improved to 76.78% coverage; regression risk for Supabase CRUD paths is reduced.
+- **Dashboard, maintenance, tenants, and settings components** remain above 70% coverage.
+- **Documents workflow** continues to provide broad coverage for uploads, forms, and detail views.
+- **AI API routes** keep 100% statement coverage across success/error flows.
 
 ### ❌ What's Missing
-- **Page components**: 0% coverage (all routes untested)
-- **API routes**: 0% coverage (AI features untested)
-- **Application components**: 0% coverage (forms, pages, layouts)
-- **Integration tests**: None
-- **E2E tests**: None
+- **Overall coverage target (60%)** still needs +4.95%; other server action files lack matching edge-case suites.
+- **UI primitives (`components/ui/**`)** remain lightly covered (~15%); interaction tests would raise confidence.
+- **Communications, maintenance, tenants server actions** rely on older mocking patterns and miss error branches.
+- **Integration/E2E layers** remain unstarted, so Supabase + file storage flows are unverified end to end.
 
 ### 🎯 Goal
 Achieve **60-70% overall coverage** with focus on:
-1. Business-critical paths (rent tracking, tenant management)
-2. AI features (your competitive advantage)
-3. User workflows (end-to-end scenarios)
+1. Extending rent.ts edge-case pattern to the remaining server actions.
+2. Increasing confidence in shared UI primitives through interaction tests.
+3. Preparing integration/E2E verification of Supabase + AI workflows.
 
 ---
 
@@ -198,18 +212,16 @@ Achieve **60-70% overall coverage** with focus on:
 
 ### Priority Matrix
 
-| Component | Business Impact | Current Coverage | Priority |
-|-----------|----------------|------------------|----------|
-| AI API Routes | 🔴 High | 0% | **P0 - Critical** |
-| Page Components | 🔴 High | 0% | **P0 - Critical** |
-| Component Coverage Tracking | 🟡 Medium | Broken | **P0 - Critical** |
-| Form Components | 🔴 High | 0% | **P1 - High** |
-| Dashboard Components | 🟡 Medium | 0% | **P1 - High** |
-| Integration Tests | 🔴 High | 0% | **P2 - Medium** |
-| E2E Tests | 🟡 Medium | 0% | **P2 - Medium** |
-| Chart Component | 🟡 Medium | Mocked | **P3 - Low** |
-| Layout Components | 🟢 Low | 0% | **P3 - Low** |
-| UI Components | 🟢 Low | 0% | **P4 - Nice to Have** |
+| Component / Area | Business Impact | Current Coverage | Priority |
+|------------------|-----------------|------------------|----------|
+| Server actions (tenants, maintenance, documents, communications) | 🔴 High | 65-70% | **P0 - Critical** |
+| UI primitives (`components/ui/**`) | 🟡 Medium | ~15% | **P1 - High** |
+| Communications interactions (filters, timeline actions) | 🔴 High | ~72% | **P2 - Medium** |
+| Integration tests | 🔴 High | 0% | **P2 - Medium** |
+| E2E tests | 🟡 Medium | 0% | **P2 - Medium** |
+| Visual regression | 🟡 Medium | 0% | **P3 - Low** |
+| Accessibility audits | 🟢 Low | 0% | **P3 - Low** |
+| Performance tests | 🟢 Low | 0% | **P4 - Nice to Have** |
 
 ---
 
@@ -221,25 +233,22 @@ Achieve **60-70% overall coverage** with focus on:
 
 ### Tasks
 
-#### 1.1 Fix Component Coverage Tracking
-**Priority**: P0
-**Estimated Time**: 2-4 hours
+#### 1.1 Stabilise Jest Runner Defaults
+**Priority**: P0  
+**Estimated Time**: 1 hour
 
-**Issue**: Component tests pass but show 0% coverage in reports
+**Issue**: `npm test` still crashes a Jest worker unless `--runInBand` is supplied manually.
 
 **Steps**:
-1. Check `jest.config.js` coverage collection patterns
-2. Verify that `components/**/*.{ts,tsx}` is included in `collectCoverageFrom`
-3. Test with single component: `npm test -- --coverage components/tenants/__tests__/tenant-form.test.tsx`
-4. Check if mocking is preventing coverage collection
-5. Review jest-environment-jsdom configuration
-6. Consider adding `@jest/globals` for better environment handling
+1. Reproduce by running `npm test` (no flags) to capture stack trace.
+2. Update `package.json` test scripts or `.jest` config to enforce `--runInBand` / lower `maxWorkers`.
+3. Re-run suite to confirm contributors can run `npm test` successfully.
 
-**Expected Outcome**: Component tests should show in coverage reports
+**Expected Outcome**: Default test script is stable for contributors and CI.
 
 **Files to Update**:
-- `jest.config.js`
-- Possibly `jest.setup.ts`
+- `package.json`
+- Optionally `jest.config.js`
 
 ---
 
@@ -289,8 +298,7 @@ Achieve **60-70% overall coverage** with focus on:
 **Target Coverage Increase**: 25% → 50%
 
 ### 2.1 Test API Routes (AI Features)
-**Priority**: P0
-**Estimated Time**: 1 day
+**Status**: ✅ Completed – suites live in `app/api/ai/__tests__`. Keep patterns below for future routes.
 
 **Routes to Test**:
 - ✅ `app/api/ai/categorize-maintenance/route.ts`
@@ -328,13 +336,13 @@ describe('POST /api/ai/categorize-maintenance', () => {
 })
 ```
 
-**Files to Create**:
+**Key Suites**:
 - `app/api/ai/__tests__/categorize-maintenance.test.ts`
 - `app/api/ai/__tests__/extract-lease.test.ts`
 - `app/api/ai/__tests__/generate-reminder.test.ts`
 - `app/api/ai/__tests__/suggest-vendor.test.ts`
 
-**Expected Coverage**: 80%+ for all AI routes
+**Current Coverage**: 100% statements across AI routes
 
 ---
 
@@ -361,8 +369,7 @@ describe('POST /api/ai/categorize-maintenance', () => {
 ---
 
 ### 2.2 Test Page Components
-**Priority**: P0
-**Estimated Time**: 2 days
+**Status**: ✅ Completed – smoke/error coverage exists for dashboard, tenants, rent, maintenance, communications, documents, and settings routes.
 
 **Pages to Test**:
 - ✅ `app/page.tsx` (Dashboard)
@@ -417,117 +424,34 @@ describe('Tenants Page', () => {
 })
 ```
 
-**Files to Create**:
-- `app/__tests__/page.test.tsx`
-- `app/tenants/__tests__/page.test.tsx`
-- `app/rent/__tests__/page.test.tsx`
-- `app/maintenance/__tests__/page.test.tsx`
-- `app/communications/__tests__/page.test.tsx`
-- `app/documents/__tests__/page.test.tsx`
-- `app/settings/__tests__/page.test.tsx`
-- `app/tenants/[id]/__tests__/page.test.tsx`
-- `app/maintenance/[id]/__tests__/page.test.tsx`
+**Key Suites**:
+- `app/__tests__/dashboard-page.test.tsx`
+- `app/(dashboard)/*/__tests__/page.test.tsx`
+- `app/(dashboard)/*/[id]/__tests__/page.test.tsx`
 
-**Expected Coverage**: 50-60% for pages
+**Current Coverage**: 55-90% across tested pages (see coverage report)
 
 ---
 
 ### 2.3 Test Untested Application Components
-**Priority**: P1
-**Estimated Time**: 2 days
+**Status**: ⚠️ Partially complete – maintenance, dashboard, documents, rent, settings, and tenant detail suites are in place. Remaining gaps focus on communications interactions and shared UI primitives.
 
-**Components to Test**:
+**Recent Additions**:
+- Maintenance suite (`maintenance-form`, `maintenance-page`, `maintenance-detail`, `ai-categorization`)
+- Documents workflow (`document-upload`, `documents-page`, `lease-extractor`, `document-form`, `document-detail`)
+- Dashboard metrics (`dashboard-overview`, `maintenance-overview`, `upcoming-payments`, `recent-tenants`)
+- Rent coverage (`rent-chart`, `rent-tracking-page`, `payment-reminder-generator`)
+- Tenants/settings detail components
 
-#### Maintenance Components
-- ✅ `components/maintenance/maintenance-form.tsx`
-- ✅ `components/maintenance/maintenance-page.tsx`
-- ✅ `components/maintenance/maintenance-detail.tsx`
-- ✅ `components/maintenance/ai-categorization.tsx`
+**Remaining Focus**:
+- `components/communications/communication-form.tsx` (form interactions + validation)
+- `components/ui/**` primitives (dialog, dropdown, table, etc.)
+- Any newly introduced feature components (add here as they appear)
 
-#### Document Components
-- ✅ `components/documents/document-upload.tsx`
-- ✅ `components/documents/documents-page.tsx`
-- ✅ `components/documents/lease-extractor.tsx`
-
-#### Communication Components
-- ✅ `components/communications/communication-form.tsx`
-- ✅ `components/communications/communications-page.tsx`
-
-#### Dashboard Components
-- ✅ `components/dashboard/dashboard-overview.tsx`
-- ✅ `components/dashboard/stat-card.tsx`
-- ✅ `components/dashboard/maintenance-overview.tsx`
-- ✅ `components/dashboard/upcoming-payments.tsx`
-- ✅ `components/dashboard/recent-tenants.tsx`
-
-#### Other Components
-- ✅ `components/rent/payment-reminder-generator.tsx`
-- ✅ `components/settings/settings-page.tsx`
-- ✅ `components/tenants/tenant-detail.tsx`
-
-**For Each Component, Test**:
-1. Renders with required props
-2. Handles user interactions (clicks, form inputs)
-3. Calls appropriate callbacks/actions
-4. Displays validation errors
-5. Handles loading and error states
-
-**Test Structure**:
-```typescript
-// components/maintenance/__tests__/maintenance-form.test.tsx
-describe('MaintenanceForm', () => {
-  const mockOnClose = jest.fn()
-  const mockTenants = [mockTenant1, mockTenant2]
-
-  it('should render all form fields', () => {
-    render(<MaintenanceForm onClose={mockOnClose} tenants={mockTenants} />)
-
-    expect(screen.getByText('Tenant *')).toBeInTheDocument()
-    expect(screen.getByText('Category *')).toBeInTheDocument()
-    expect(screen.getByText('Title *')).toBeInTheDocument()
-  })
-
-  it('should show validation errors for missing fields', async () => {
-    render(<MaintenanceForm onClose={mockOnClose} tenants={mockTenants} />)
-
-    const submitButton = screen.getByText('Create Request')
-    await userEvent.click(submitButton)
-
-    expect(screen.getByText(/required/i)).toBeInTheDocument()
-  })
-
-  it('should submit form with valid data', async () => {
-    const mockCreate = jest.fn().mockResolvedValue({ success: true })
-    jest.mock('@/app/actions/maintenance', () => ({
-      createMaintenanceRequest: mockCreate,
-    }))
-
-    render(<MaintenanceForm onClose={mockOnClose} tenants={mockTenants} />)
-
-    // Fill form...
-    await userEvent.click(screen.getByText('Create Request'))
-
-    expect(mockCreate).toHaveBeenCalledWith(expect.any(FormData))
-  })
-})
-```
-
-**Files to Create**:
-- `components/maintenance/__tests__/maintenance-form.test.tsx`
-- `components/maintenance/__tests__/maintenance-page.test.tsx`
-- `components/maintenance/__tests__/maintenance-detail.test.tsx`
-- `components/maintenance/__tests__/ai-categorization.test.tsx`
-- `components/documents/__tests__/document-upload.test.tsx`
-- `components/documents/__tests__/documents-page.test.tsx`
-- `components/documents/__tests__/lease-extractor.test.tsx`
-- `components/communications/__tests__/communication-form.test.tsx`
-- `components/communications/__tests__/communications-page.test.tsx`
-- `components/dashboard/__tests__/dashboard-overview.test.tsx`
-- `components/dashboard/__tests__/stat-card.test.tsx`
-- `components/dashboard/__tests__/maintenance-overview.test.tsx`
-- `components/dashboard/__tests__/upcoming-payments.test.tsx`
-- `components/dashboard/__tests__/recent-tenants.test.tsx`
-- `components/rent/__tests__/payment-reminder-generator.test.tsx`
+**Suggested Approach**:
+1. Audit coverage report for 0% UI primitives and add minimal render/interaction tests.
+2. Mirror the communications page patterns to drive the communication form with `userEvent`.
+3. Extract shared test utilities where repetition now exists (forms, Supabase mocks).
 - `components/settings/__tests__/settings-page.test.tsx`
 - `components/tenants/__tests__/tenant-detail.test.tsx`
 

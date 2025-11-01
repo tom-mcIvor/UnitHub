@@ -166,23 +166,40 @@ The codebase is structured to easily extend with:
 
 ### 9. Testing Infrastructure
 - **Jest** with React Testing Library for unit/component testing
-- **163 tests** covering server actions, components, pages, and layouts
-- **36.57% code coverage** (target: 60%+, up from 32.05%)
+- **243 tests** covering server actions, components, pages, layouts, API routes, and UI primitives
+- **55.05% code coverage** (target: 60%+, up from 36.57% baseline; +1.45% this session)
 - Co-located test structure (`__tests__/` directories)
-- 100% test pass rate (163/163 passing)
+- 100% test pass rate (243/243 passing)
 - Test coverage areas:
   - Settings: 100% coverage
+  - Dashboard layout: 100% coverage
   - Layout components: 89% coverage
   - Dashboard components: 88% coverage
+  - App layout: 87.5% coverage
+  - Document components: 84% coverage
+  - Rent components: 78% coverage
   - Maintenance components: 75% coverage
   - Tenants components: 74% coverage
-  - Server actions: 69% coverage (30 tests)
-  - Rent components: 61% coverage
-  - Communications components: 48% coverage
+  - Communications components: 72% coverage
+  - Server actions: 76.78% coverage (rent.ts 100% after edge case tests)
   - AI API routes: 100% coverage
-  - Document components: 0% (untested)
+  - Documents [id] page: 90% coverage
+  - Download API route: 75% coverage
+  - UI primitives: 15% coverage (smoke tests)
 - See `docs/testing-roadmap.md` for testing plan
-- See `docs/test-expansion-session-2-2025-11-01.md` for latest changes
+- See `docs/test-expansion-2025-11-01-coverage-push.md` and `docs/test-expansion-2025-11-01-server-actions.md` for latest changes
+
+### 10. CI/CD Pipeline
+- **GitHub Actions** workflows for automated testing and code review
+- Continuous Integration workflow (`node-ci.yml`):
+  - Runs on every push to main
+  - Linting, testing, and build validation
+  - Status: Build failing (Suspense boundary fix pending)
+- AI Code Review workflow (`codex.yml`):
+  - GPT-4o-mini powered code review
+  - Runs on every push to main
+  - Status: Blocked (requires OpenAI API billing setup)
+- See `docs/github-actions-ci.md` for setup details and troubleshooting
 
 ---
 

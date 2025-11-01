@@ -20,13 +20,20 @@ The testing roadmap is your complete testing guide containing:
 
 ### Other Testing Docs
 
+**Core Guides:**
 - **[Testing Best Practices](./testing-best-practices.md)** - Patterns and guidelines for writing tests
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
+
+**Recent Test Expansion Sessions:**
+- **[Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-server-actions.md)** - Rent actions 57.5% → 100%, overall coverage 55.05%
+- **[Coverage Push Session (2025-11-01)](./test-expansion-2025-11-01-coverage-push.md)** - Layouts, dynamic pages, API routes, UI primitives (+36 tests, 53.6% coverage)
+- **[Documents Workflow Expansion](./test-expansion-documents-workflow.md)** - Document upload, forms, detail views, lease extraction
+- **[Session 2 (2025-11-01)](./test-expansion-session-2-2025-11-01.md)** - Settings, communications, maintenance page tests
+- **[Session 1 (2025-11-01)](./test-expansion-2025-11-01.md)** - Layout components, theme provider, rent charts
+
+**Historical Issues (Resolved):**
+- **[Test Fixes and Payment Status](./test-fixes-and-payment-status.md)** - Syntax errors, API compatibility, validation fixes
 - **[Test Memory Optimization](./test-memory-optimization.md)** - Memory configuration and heap size setup
-- **[Page Route Testing Progress](./page-route-testing-progress.md)** - Page component testing status
-- **[Edit Modals and Test Stabilization](./edit-modals-and-test-stabilization.md)** - Latest test fixes and edit modal implementation
-- **[Dashboard & Detail Component Testing](./dashboard-and-detail-testing.md)** - Dashboard/detail testing work summary
-- **[Additional Server Action Tests](./additional-server-action-tests.md)** - Server action coverage details
 
 ---
 
@@ -43,6 +50,7 @@ The testing roadmap is your complete testing guide containing:
 - **[Supabase Integration Status](./supabase-integration-status.md)** - Database setup progress
 - **[Tenant Database Integration](./tenant-database-integration.md)** - Tenant module integration
 - **[Complete Database Integration](./complete-database-integration.md)** - Full database integration details
+- **[GitHub Actions CI/CD](./github-actions-ci.md)** - Automated testing and code review workflows
 
 ---
 
@@ -83,9 +91,4 @@ The testing roadmap is your complete testing guide containing:
 
 ---
 
-error on starting up the app with npm run dev:  
-✓ Starting...
-⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-✓ Ready in 5.6s
-
-**Last Updated**: 2025-10-31
+**Last Updated**: 2025-11-01 (Server action edge case coverage push)
