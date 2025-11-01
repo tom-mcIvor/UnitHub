@@ -14,9 +14,14 @@ jest.mock('@/components/auth/sign-in-form', () => ({
   SignInForm: () => <div>Mock Sign In Form</div>,
 }))
 
+jest.mock('@/components/auth/sign-up-form', () => ({
+  SignUpForm: () => <div>Mock Sign Up Form</div>,
+}))
+
 jest.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children }: any) => <div>{children}</div>,
   DialogContent: ({ children }: any) => <div>{children}</div>,
+  DialogTitle: ({ children }: any) => <div>{children}</div>,
 }))
 
 jest.mock('next/navigation', () => ({

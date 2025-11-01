@@ -132,21 +132,23 @@ function buildSupabaseMock(overrides: SupabaseOverrides = {}) {
 
   const tenantsSelect = jest.fn((columns?: string, options?: { head?: boolean }) => {
     if (options?.head) {
-      if (tenantsCountError) {
-        return { count: null, error: tenantsCountError }
+      const eqChain = {
+        count: tenantsCountError ? null : tenantsCount,
+        error: tenantsCountError || null,
       }
-      return { count: tenantsCount, error: null }
+      return { eq: jest.fn(() => eqChain) }
     }
 
     if (columns === 'rent_amount') {
-      return { data: rentAmountRows, error: null }
+      return { eq: jest.fn(() => ({ data: rentAmountRows, error: null })) }
     }
 
     if (columns?.includes('id') && columns?.includes('name')) {
-      const order = jest.fn(() => ({
-        limit: jest.fn(() => ({ data: recentTenants, error: null })),
-      }))
-      return { order }
+      const chain: any = {}
+      chain.eq = jest.fn(() => chain)
+      chain.order = jest.fn(() => chain)
+      chain.limit = jest.fn(() => ({ data: recentTenants, error: null }))
+      return chain
     }
 
     return { data: [], error: null }
@@ -156,15 +158,20 @@ function buildSupabaseMock(overrides: SupabaseOverrides = {}) {
     if (options?.head) {
       if (rentPaymentsCountError) {
         return {
-          in: jest.fn(() => ({ count: null, error: rentPaymentsCountError })),
+          eq: jest.fn(() => ({
+            in: jest.fn(() => ({ count: null, error: rentPaymentsCountError })),
+          })),
         }
       }
       return {
-        in: jest.fn(() => ({ count: rentPayments.length, error: null })),
+        eq: jest.fn(() => ({
+          in: jest.fn(() => ({ count: rentPayments.length, error: null })),
+        })),
       }
     }
 
     const chain: any = {}
+    chain.eq = jest.fn(() => chain)
     chain.in = jest.fn(() => chain)
     chain.lte = jest.fn(() => chain)
     chain.order = jest.fn(() => chain)
@@ -176,15 +183,20 @@ function buildSupabaseMock(overrides: SupabaseOverrides = {}) {
     if (options?.head) {
       if (maintenanceCountError) {
         return {
-          in: jest.fn(() => ({ count: null, error: maintenanceCountError })),
+          eq: jest.fn(() => ({
+            in: jest.fn(() => ({ count: null, error: maintenanceCountError })),
+          })),
         }
       }
       return {
-        in: jest.fn(() => ({ count: maintenanceRequests.length, error: null })),
+        eq: jest.fn(() => ({
+          in: jest.fn(() => ({ count: maintenanceRequests.length, error: null })),
+        })),
       }
     }
 
     const chain: any = {}
+    chain.eq = jest.fn(() => chain)
     chain.in = jest.fn(() => chain)
     chain.order = jest.fn(() => chain)
     chain.limit = jest.fn(() => ({ data: maintenanceRequests, error: null }))
@@ -203,6 +215,15 @@ function buildSupabaseMock(overrides: SupabaseOverrides = {}) {
     select: maintenanceSelect,
   }
 
+  const mockUser = {
+    id: 'test-user-id-123',
+    email: 'test@example.com',
+    aud: 'authenticated',
+    role: 'authenticated',
+    created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-01-01T00:00:00Z',
+  }
+
   return {
     from: jest.fn((table: string) => {
       if (table === 'tenants') return tenantsTable
@@ -210,6 +231,12 @@ function buildSupabaseMock(overrides: SupabaseOverrides = {}) {
       if (table === 'maintenance_requests') return maintenanceTable
       return {}
     }),
+    auth: {
+      getUser: jest.fn().mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      }),
+    },
   }
 }
 
@@ -270,14 +297,17 @@ describe('Dashboard server actions', () => {
           if (table === 'tenants') {
             return {
               select: jest.fn(() => ({
-                order: jest.fn(() => ({
-                  limit: jest.fn(() => ({ data: null, error: failure })),
+                eq: jest.fn(() => ({
+                  order: jest.fn(() => ({
+                    limit: jest.fn(() => ({ data: null, error: failure })),
+                  })),
                 })),
               })),
             }
           }
           return baseSupabase.from(table)
         }),
+        auth: baseSupabase.auth,
       }
 
       mockSupabase = errorSupabase
@@ -315,6 +345,7 @@ describe('Dashboard server actions', () => {
         from: jest.fn((table: string) => {
           if (table === 'rent_payments') {
             const chain: any = {}
+            chain.eq = jest.fn(() => chain)
             chain.in = jest.fn(() => chain)
             chain.lte = jest.fn(() => chain)
             chain.order = jest.fn(() => chain)
@@ -325,6 +356,7 @@ describe('Dashboard server actions', () => {
           }
           return baseSupabase.from(table)
         }),
+        auth: baseSupabase.auth,
       }
       mockSupabase = errorSupabase
 
@@ -360,6 +392,7 @@ describe('Dashboard server actions', () => {
         from: jest.fn((table: string) => {
           if (table === 'maintenance_requests') {
             const chain: any = {}
+            chain.eq = jest.fn(() => chain)
             chain.in = jest.fn(() => chain)
             chain.order = jest.fn(() => chain)
             chain.limit = jest.fn(() => ({ data: null, error: failure }))
@@ -369,6 +402,7 @@ describe('Dashboard server actions', () => {
           }
           return baseSupabase.from(table)
         }),
+        auth: baseSupabase.auth,
       }
 
       mockSupabase = errorSupabase
