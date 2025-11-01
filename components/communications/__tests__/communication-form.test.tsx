@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CommunicationForm } from "../communication-form"
 import { createCommunicationLog, updateCommunicationLog } from "@/app/actions/communications"
+import { toast } from "sonner"
 
 const refreshMock = jest.fn()
 
@@ -15,6 +16,14 @@ jest.mock("@/app/actions/communications", () => ({
   ...(jest.requireActual("@/app/actions/communications") as object),
   createCommunicationLog: jest.fn(),
   updateCommunicationLog: jest.fn(),
+}))
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
 }))
 
 const mockTenants = [
@@ -35,6 +44,7 @@ describe("CommunicationForm", () => {
     ;(updateCommunicationLog as jest.Mock).mockReset()
     ;(createCommunicationLog as jest.Mock).mockResolvedValue({ success: true, error: null })
     ;(updateCommunicationLog as jest.Mock).mockResolvedValue({ success: true, error: null })
+    jest.clearAllMocks()
   })
 
   afterEach(() => {
@@ -61,7 +71,7 @@ describe("CommunicationForm", () => {
 
     await user.click(screen.getByRole("button", { name: /log communication/i }))
 
-    expect(await screen.findAllByText(/required/i)).not.toHaveLength(0)
+    expect(await screen.findAllByText(/is required/i)).not.toHaveLength(0)
     expect(createCommunicationLog).not.toHaveBeenCalled()
   })
 
@@ -92,7 +102,7 @@ describe("CommunicationForm", () => {
     )
 
     expect(refreshMock).toHaveBeenCalled()
-    expect(screen.getByText(/logged successfully/i)).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith("Communication logged successfully!")
 
     act(() => {
       jest.advanceTimersByTime(1000)
@@ -148,6 +158,7 @@ describe("CommunicationForm", () => {
         ["content", "Sent lease renewal."],
       ]),
     )
+    expect(toast.success).toHaveBeenCalledWith("Communication updated successfully!")
   })
 
   it("shows backend error when server action fails", async () => {
@@ -166,7 +177,7 @@ describe("CommunicationForm", () => {
     await user.click(screen.getByRole("button", { name: /log communication/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to log communication/i)).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith("Failed to log communication")
     })
 
     expect(onClose).not.toHaveBeenCalled()

@@ -42,13 +42,15 @@ export async function getCommunicationLogs(): Promise<{
 
     const { data, error } = await supabase
       .from('communication_logs')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
           unit_number
         )
-      `)
+      `
+      )
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -74,13 +76,15 @@ export async function getCommunicationLog(id: string): Promise<{
 
     const { data, error } = await supabase
       .from('communication_logs')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
           unit_number
         )
-      `)
+      `
+      )
       .eq('id', id)
       .single()
 

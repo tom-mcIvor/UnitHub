@@ -2,6 +2,15 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RentPaymentForm } from '@/components/rent/rent-payment-form'
+import { toast } from 'sonner'
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}))
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -43,6 +52,7 @@ describe('RentPaymentForm', () => {
 
   beforeEach(() => {
     mockOnClose.mockClear()
+    jest.clearAllMocks()
   })
 
   it('renders form with tenant dropdown', () => {
@@ -69,7 +79,7 @@ describe('RentPaymentForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getAllByText(/required/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/is required/i).length).toBeGreaterThan(0)
     })
   })
 
@@ -90,7 +100,7 @@ describe('RentPaymentForm', () => {
     await user.selectOptions(tenantSelect, '123')
     await user.selectOptions(statusSelect, 'paid')
 
-    const amountInput = screen.getByPlaceholderText(/1200/i)
+    const amountInput = screen.getByLabelText(/Amount/i)
     await user.clear(amountInput)
     await user.type(amountInput, '1200')
 
@@ -102,7 +112,7 @@ describe('RentPaymentForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/payment recorded successfully/i)).toBeInTheDocument()
+      expect(toast.success).toHaveBeenCalledWith('Payment recorded successfully')
     })
   })
 })

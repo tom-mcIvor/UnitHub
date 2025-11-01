@@ -2,6 +2,15 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TenantForm } from '@/components/tenants/tenant-form'
+import { toast } from 'sonner'
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}))
 
 const getInputByLabel = (labelText: string) => {
   const label = screen.getByText(labelText)
@@ -27,6 +36,11 @@ jest.mock('@/app/actions/tenants', () => ({
     error: null,
     data: { id: '123' },
   })),
+  updateTenant: jest.fn(() => Promise.resolve({
+    success: true,
+    error: null,
+    data: { id: '123' },
+  })),
 }))
 
 describe('TenantForm', () => {
@@ -34,6 +48,7 @@ describe('TenantForm', () => {
 
   beforeEach(() => {
     mockOnClose.mockClear()
+    jest.clearAllMocks()
   })
 
   it('renders all form fields', () => {
@@ -56,7 +71,7 @@ describe('TenantForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getAllByText(/required/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/is required/i).length).toBeGreaterThan(0)
     })
   })
 
@@ -87,7 +102,7 @@ describe('TenantForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/tenant created successfully/i)).toBeInTheDocument()
+      expect(toast.success).toHaveBeenCalledWith('Tenant created successfully!')
     })
   })
 })

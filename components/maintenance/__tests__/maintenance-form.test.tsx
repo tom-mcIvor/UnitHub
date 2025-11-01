@@ -1,22 +1,31 @@
 
 
 
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }),
-}));
-
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MaintenanceForm } from "../maintenance-form";
+import { toast } from "sonner";
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    refresh: jest.fn(),
+    push: jest.fn(),
+  }),
+}));
+
 jest.mock('@/app/actions/maintenance', () => ({
   createMaintenanceRequest: jest.fn().mockResolvedValue({ success: true }),
   updateMaintenanceRequest: jest.fn(),
 }));
 import { Tenant } from "@/lib/types";
 
-
-
-
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}))
 
 const mockTenants: Tenant[] = [
   { id: "1", name: "John Doe", email: "jhon@doe.com", unit_number: "101" },
@@ -26,7 +35,7 @@ const mockTenants: Tenant[] = [
 describe("MaintenanceForm", () => {
   const onClose = jest.fn();
 
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
@@ -78,7 +87,9 @@ describe("MaintenanceForm", () => {
     const submitButton = screen.getByRole("button", { name: "Create Request" });
     await user.click(submitButton);
 
-    expect(await screen.findByText("Maintenance request created successfully!")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith("Maintenance request created successfully!");
+    });
   });
 
   it("calls onClose when the cancel button is clicked", () => {

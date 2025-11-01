@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import { createMaintenanceRequest, updateMaintenanceRequest } from "@/app/actions/maintenance"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import type { Tenant } from "@/lib/types"
 import type { MaintenanceRequestWithTenant } from "@/app/actions/maintenance"
 
@@ -22,8 +23,6 @@ interface MaintenanceFormProps {
 
 export function MaintenanceForm({ onClose, tenants = [], editingRequest, initialData }: MaintenanceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingRequest
 
@@ -38,8 +37,6 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
 
   const onSubmit = async (data: MaintenanceRequestFormData) => {
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       // Convert to FormData for server action
@@ -62,15 +59,14 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
         : await createMaintenanceRequest(formData)
 
       if (result.success) {
-        setSuccess(true)
+        toast.success(`Maintenance request ${isEditing ? 'updated' : 'created'} successfully!`)
         router.refresh()
-        setTimeout(() => {
-          onClose()
-        }, 1000)
+        onClose()
       } else {
-        console.error("Submission failed:", result.error);
-        setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} maintenance request`)
+        toast.error(result.error || `Failed to ${isEditing ? 'update' : 'create'} maintenance request`)
       }
+    } catch (err) {
+      toast.error("An unexpected error occurred")
     } finally {
       setIsSubmitting(false)
     }
@@ -87,18 +83,6 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4" data-testid="maintenance-form">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">Maintenance request {isEditing ? 'updated' : 'created'} successfully!</p>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="tenantId" className="block text-sm font-medium text-text mb-2">Tenant *</label>
@@ -199,8 +183,8 @@ export function MaintenanceForm({ onClose, tenants = [], editingRequest, initial
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || success}>
-              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Request" : "Create Request"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditing ? "Update Request" : "Create Request"}
             </Button>
           </div>
         </form>

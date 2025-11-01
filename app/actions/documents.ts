@@ -44,16 +44,20 @@ export async function getDocuments(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('documents')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
           unit_number
         )
       `)
+      .eq('user_id', user.id)
       .order('uploaded_at', { ascending: false })
 
     if (error) {
@@ -76,10 +80,13 @@ export async function getDocument(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('documents')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
@@ -87,6 +94,7 @@ export async function getDocument(id: string): Promise<{
         )
       `)
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -109,6 +117,8 @@ export async function createDocument(formData: FormData): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = documentMetadataSchema.safeParse(rawData)
@@ -129,6 +139,7 @@ export async function createDocument(formData: FormData): Promise<{
     const { data, error } = await supabase
       .from('documents')
       .insert({
+        user_id: user.id,
         tenant_id: tenantId || null,
         title,
         type,
@@ -177,6 +188,8 @@ export async function updateDocument(
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = documentMetadataSchema.safeParse(rawData)
@@ -209,6 +222,7 @@ export async function updateDocument(
       .from('documents')
       .update(updatePayload)
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -246,11 +260,14 @@ export async function deleteDocument(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const { data: existing, error: fetchError } = await supabase
       .from('documents')
       .select('storage_path')
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (fetchError) {
@@ -267,6 +284,7 @@ export async function deleteDocument(id: string): Promise<{
       .from('documents')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (deleteError) {
       console.error('Error deleting document:', deleteError)

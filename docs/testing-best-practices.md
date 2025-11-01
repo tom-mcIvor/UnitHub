@@ -1,8 +1,8 @@
 # Testing Best Practices Guide
 
 **UnitHub Testing Documentation**
-**Last Updated**: 2025-11-01 (Communications Server Action Edge Cases)
-**Current Test Coverage**: 289 tests passing (server actions + components + pages + layouts + API routes + UI primitives)
+**Last Updated**: 2025-11-01 (Toast Notification Tests)
+**Current Test Coverage**: 274 tests passing, 27 tests failing
 
 ---
 
@@ -15,6 +15,15 @@
 5. [How to Write Tests](#how-to-write-tests)
 6. [Running Tests](#running-tests)
 7. [Debugging Failed Tests](#debugging-failed-tests)
+8. [Known Issues](#known-issues)
+
+---
+
+## Known Issues
+
+- `components/ui/__tests__/dialog.test.tsx`: This test is failing because it cannot find an element with the text "Close" inside an element with the attribute `data-slot="dialog-footer"`.
+- `app/actions/__tests__/documents.test.ts`: These tests are failing because the server actions are returning an error message instead of `null`.
+- `app/actions/__tests__/rent.test.ts`: These tests are failing because the server actions are returning an error message instead of `null`.
 
 ---
 
@@ -133,7 +142,7 @@ components/tenants/
 - ✅ Renders each required field
 - ✅ Displays validation errors
 - ✅ Handles cancel flow
-- ✅ Submits valid payloads
+- ✅ Submits valid payloads and asserts toast notifications
 
 #### **Tenants List** (`components/tenants/__tests__/tenants-list.test.tsx`)
 - ✅ Renders tenant data and empty states
@@ -144,7 +153,7 @@ components/tenants/
 #### **Rent Payment Form** (`components/rent/__tests__/rent-payment-form.test.tsx`)
 - ✅ Confirms field population
 - ✅ Validates required inputs
-- ✅ Records successful submissions via toast confirmation
+- ✅ Records successful submissions and asserts toast notifications
 
 #### **Rent Tracking Page** (`components/rent/__tests__/rent-tracking-page.test.tsx`)
 - ✅ Renders summary stats
@@ -158,12 +167,12 @@ components/tenants/
 
 #### **Document Upload Modal** (`components/documents/__tests__/document-upload.test.tsx`)
 - ✅ Handles required field validation and Supabase upload happy path
-- ✅ Surfaces upload failures without writing metadata
+- ✅ Surfaces upload failures and asserts toast notifications
 - ✅ Verifies success banner, router refresh, and close timer
 
 #### **Document Metadata Form** (`components/documents/__tests__/document-form.test.tsx`)
 - ✅ Exercises create/update flows with zod validation
-- ✅ Confirms success + error banners
+- ✅ Confirms success and error toast notifications
 - ✅ Refreshes data and closes after debounce timer
 
 #### **Document Detail View** (`components/documents/__tests__/document-detail.test.tsx`)
@@ -184,7 +193,7 @@ components/tenants/
 #### **Communication Form** (`components/communications/__tests__/communication-form.test.tsx`)
 - ✅ Validates required fields before submission
 - ✅ Drives create vs update flows with FormData payload assertions
-- ✅ Surfaces server-side errors and respects close timers
+- ✅ Surfaces server-side errors and asserts toast notifications
 
 Component suites use mocks for Next.js router hooks, server actions, and the `RentChart` module to keep tests isolated from server-only APIs.
 
@@ -701,7 +710,7 @@ For component tests failing with `Request is not defined`:
 
 ## Summary
 
-**Current Status**: ✅ 289/289 tests passing (100% pass rate)
+**Current Status**: 274/301 tests passing (91% pass rate)
 
 - **What's Working**:
 - Server action suites now span 77 tests, covering success and failure paths for tenants, rent, maintenance, documents, communications, and dashboards.
