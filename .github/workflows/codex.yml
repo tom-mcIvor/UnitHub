@@ -1,0 +1,46 @@
+name: Code Review on Push
+on:
+  push:
+    branches: [main]
+
+jobs:
+  codex:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # If you want Codex to build and run code, install any dependencies that
+      # need to be downloaded before the "Run Codex" step because Codex's
+      # default sandbox disables network access.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Codex
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: |
+            Review the recent changes pushed to ${{ github.repository }} on branch ${{ github.ref_name }}.
+
+            Commits in this push:
+            ${{ github.event.commits }}
+
+            Review the code changes and suggest any improvements, potential bugs, or issues.
+            Be concise and specific in your feedback.
+
+      - name: Output review to summary
+        if: always()
+        run: |
+          echo "## Code Review Results" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.run_codex.outputs.final-message }}" >> $GITHUB_STEP_SUMMARY
