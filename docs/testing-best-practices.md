@@ -1,8 +1,8 @@
 # Testing Best Practices Guide
 
 **UnitHub Testing Documentation**
-**Last Updated**: 2025-11-01 (Session 2)
-**Current Test Coverage**: 163 tests passing (server actions + components + pages + layouts)
+**Last Updated**: 2025-11-01 (Communications Server Action Edge Cases)
+**Current Test Coverage**: 289 tests passing (server actions + components + pages + layouts + API routes + UI primitives)
 
 ---
 
@@ -55,70 +55,77 @@ components/tenants/
 ### ✅ Server Actions (100% Coverage - All Passing)
 
 #### **Tenants** (`app/actions/__tests__/tenants.test.ts`)
-- ✅ Fetch all tenants with proper ordering
-- ✅ Fetch single tenant by ID
-- ✅ Create tenant with valid data
-- ✅ Validation error on missing required fields
-- ✅ Update existing tenant
-- ✅ Delete tenant by ID
+- ✅ Happy-path CRUD coverage for tenants (list, read, create, update, delete)
+- ✅ Validation failure for required fields
+- ✅ Supabase error responses and unexpected `createClient` rejections for each action
+- ✅ Dual revalidation assertions for updates and deletes
 
-**Tests**: 6 passing | **Lines**: 152
+**Tests**: 17 passing
 
 #### **Rent Payments** (`app/actions/__tests__/rent.test.ts`)
-- ✅ Fetch all rent payments with tenant JOIN
-- ✅ Create rent payment with valid data
-- ✅ Validation error on missing fields
-- ✅ Update existing rent payment
-- ✅ Delete rent payment by ID
+- ✅ `getRentPayment` success, missing record, and unexpected rejection
+- ✅ `getRentPayments` handles overdue mapping, Supabase errors, and exception paths
+- ✅ `createRentPayment` validates payloads, handles insert failures, and unexpected rejects
+- ✅ `updateRentPayment` covers validation, Supabase failure, and exception branches
+- ✅ `deleteRentPayment` asserts Supabase error handling and exception branches
 
-**Tests**: 5 passing | **Lines**: 135
+**Tests**: 18 passing
 
 #### **Maintenance Requests** (`app/actions/__tests__/maintenance.test.ts`)
-- ✅ Fetch all maintenance requests with tenant info
-- ✅ Fetch single maintenance request by ID
-- ✅ Create maintenance request with valid data
-- ✅ Validation error on missing required fields
-- ✅ Update existing maintenance request
-- ✅ Delete maintenance request by ID
+- ✅ CRUD workflows with tenant joins
+- ✅ Validation error coverage for required fields
+- ✅ Delete flow exercising Supabase error handling
 
-**Tests**: 6 passing | **Lines**: 162
+**Tests**: 6 passing
 
 #### **Documents** (`app/actions/__tests__/documents.test.ts`)
-- ✅ Fetch all documents with optional tenant info
-- ✅ Fetch single document by ID
-- ✅ Create document with tenant
-- ✅ Create document without tenant (property-level)
-- ✅ Validation error on missing required fields
-- ✅ Update existing document
-- ✅ Delete document by ID
+- ✅ `getDocuments` and `getDocument` with success, Supabase error, and unexpected reject scenarios
+- ✅ `createDocument` and `updateDocument` cover validation, Supabase error returns, and exception paths
+- ✅ `deleteDocument` covers storage cleanup success, Supabase failures, storage removal errors, and client creation rejects
+- ✅ Ensures revalidatePath and admin storage interactions are invoked correctly
 
-**Tests**: 7 passing | **Lines**: 156
+**Tests**: 19 passing
 
 #### **Communication Logs** (`app/actions/__tests__/communications.test.ts`)
-- ✅ Fetch all communication logs with tenant info
-- ✅ Fetch single communication log by ID
-- ✅ Create communication log with valid data
-- ✅ Validation error on missing required fields
-- ✅ Update existing communication log
-- ✅ Delete communication log by ID
+- ✅ Happy-path CRUD coverage for communications (list, read, create, update, delete)
+- ✅ Validation error handling for required fields
+- ✅ Supabase error responses and unexpected `createClient` rejections across all actions
+- ✅ Revalidation assertions for create/update/delete flows
+- ✅ Fallback mapping coverage for missing tenant data
 
-**Tests**: 6 passing | **Lines**: 141
+**Tests**: 17 passing
 
-**Total Server Action Tests**: 30 passing ✅
+**Total Server Action Tests**: 77 passing ✅
 
 **Layout Component Tests**: 5 passing ✅
 - `components/layout/__tests__/sidebar.test.tsx` - 2 tests
 - `components/layout/__tests__/header.test.tsx` - 1 test
 - `components/layout/__tests__/dashboard-layout.test.tsx` - 2 tests
 
-**Page Component Tests**: 10 passing ✅
-- `components/settings/__tests__/settings-page.test.tsx` - 5 tests
-- `components/communications/__tests__/communications-page.test.tsx` - 5 tests
-- `components/maintenance/__tests__/maintenance-page.test.tsx` - 5 tests (updated)
+**Page Component Tests** ✅
+- `app/__tests__/dashboard-page.test.tsx`
+- `app/(dashboard)/tenants/__tests__/page.test.tsx`
+- `app/(dashboard)/tenants/__tests__/tenant-detail-page.test.tsx`
+- `app/(dashboard)/rent/__tests__/page.test.tsx`
+- `app/(dashboard)/maintenance/__tests__/page.test.tsx`
+- `app/(dashboard)/maintenance/__tests__/maintenance-detail-page.test.tsx`
+- `app/(dashboard)/communications/__tests__/page.test.tsx`
+- `app/(dashboard)/documents/__tests__/page.test.tsx`
+- `app/(dashboard)/settings/__tests__/page.test.tsx`
 
-**Other Component Tests**: 6 passing ✅
-- `components/rent/__tests__/rent-chart.test.tsx` - 4 tests
-- `components/__tests__/theme-provider.test.tsx` - 2 tests
+**Documents, Rent & Communications Component Tests** ✅
+- `components/documents/__tests__/documents-page.test.tsx`
+- `components/documents/__tests__/document-upload.test.tsx`
+- `components/documents/__tests__/document-form.test.tsx`
+- `components/documents/__tests__/document-detail.test.tsx`
+- `components/documents/__tests__/lease-extractor.test.tsx`
+- `components/communications/__tests__/communication-form.test.tsx`
+- `components/rent/__tests__/payment-reminder-generator.test.tsx`
+- `components/rent/__tests__/rent-chart.test.tsx`
+- `components/rent/__tests__/rent-tracking-page.test.tsx`
+
+**Other Component Tests** ✅
+- `components/__tests__/theme-provider.test.tsx`
 
 ### ✅ Component Suites (Stabilized)
 
@@ -143,6 +150,41 @@ components/tenants/
 - ✅ Renders summary stats
 - ✅ Filters by status and search
 - ✅ Shows empty/error states
+
+#### **Documents Page** (`components/documents/__tests__/documents-page.test.tsx`)
+- ✅ Covers filtering by type and search
+- ✅ Opens upload/form modals and delete confirmation
+- ✅ Mocks server action delete flow and router refresh
+
+#### **Document Upload Modal** (`components/documents/__tests__/document-upload.test.tsx`)
+- ✅ Handles required field validation and Supabase upload happy path
+- ✅ Surfaces upload failures without writing metadata
+- ✅ Verifies success banner, router refresh, and close timer
+
+#### **Document Metadata Form** (`components/documents/__tests__/document-form.test.tsx`)
+- ✅ Exercises create/update flows with zod validation
+- ✅ Confirms success + error banners
+- ✅ Refreshes data and closes after debounce timer
+
+#### **Document Detail View** (`components/documents/__tests__/document-detail.test.tsx`)
+- ✅ Shows extracted lease data
+- ✅ Guards download button when file path missing
+- ✅ Launches edit modal with initial data
+
+#### **Lease Extractor** (`components/documents/__tests__/lease-extractor.test.tsx`)
+- ✅ Simulates drag/drop upload and async extraction
+- ✅ Displays confidence badges and import call
+- ✅ Handles cancel + import flows
+
+#### **Payment Reminder Generator** (`components/rent/__tests__/payment-reminder-generator.test.tsx`)
+- ✅ Calls AI reminder endpoint with correct payload
+- ✅ Renders loading and generated states
+- ✅ Mocks clipboard copy + reset timer
+
+#### **Communication Form** (`components/communications/__tests__/communication-form.test.tsx`)
+- ✅ Validates required fields before submission
+- ✅ Drives create vs update flows with FormData payload assertions
+- ✅ Surfaces server-side errors and respects close timers
 
 Component suites use mocks for Next.js router hooks, server actions, and the `RentChart` module to keep tests isolated from server-only APIs.
 
@@ -180,7 +222,9 @@ Component suites use mocks for Next.js router hooks, server actions, and the `Re
 - Date range validation
 
 **Components Need**:
-- Loading states
+- App shell providers (`app/layout.tsx`, `(dashboard)/layout.tsx`)
+- Dynamic document page (`app/(dashboard)/documents/[id]/page.tsx`)
+- Shared UI primitives (`components/ui/**`) smoke coverage
 - Slow network simulation
 - Form submission during network failure
 - Optimistic UI updates
@@ -496,12 +540,14 @@ npm test -- path/to/test
 
 ### Run All Tests
 ```bash
-npm test
+npx jest --runInBand
 ```
+
+> ℹ️ `npm test` without `--runInBand` can still crash a Jest worker. Until the script is updated, prefer the explicit command above.
 
 ### Run Specific Test Suite
 ```bash
-npm test -- app/actions/__tests__/tenants.test.ts
+npx jest --runInBand app/actions/__tests__/tenants.test.ts
 ```
 
 ### Run Tests in Watch Mode
@@ -511,17 +557,17 @@ npm run test:watch
 
 ### Run Tests with Coverage
 ```bash
-npm run test:coverage
+npx jest --coverage --runInBand --silent
 ```
 
 ### Run Only Server Action Tests
 ```bash
-npm test -- app/actions/__tests__
+npx jest --runInBand app/actions/__tests__
 ```
 
-### Run Only Component Tests (Currently Blocked)
+### Run Only Component Tests
 ```bash
-npm test -- components
+npx jest --runInBand components
 ```
 
 ---
@@ -630,10 +676,10 @@ For component tests failing with `Request is not defined`:
 - Performance benchmarking
 
 ### Coverage Goals
-- Current: **36.57%** overall (Updated 2025-11-01 Session 2)
+- Current: **57.62%** overall (Updated 2025-11-01 Communications Server Action Edge Cases)
 - Phase 1: **25%** ✅ (Exceeded)
-- Phase 2: **50%** (In Progress - 71% complete)
-- Phase 3: **60%**
+- Phase 2: **50%** ✅ (Exceeded)
+- Phase 3: **60%** (In Progress - 95% complete)
 - Phase 4: **70%+**
 
 ---
@@ -655,27 +701,27 @@ For component tests failing with `Request is not defined`:
 
 ## Summary
 
-**Current Status**: ✅ 163/163 tests passing (100% pass rate)
+**Current Status**: ✅ 289/289 tests passing (100% pass rate)
 
-**What's Working**:
-- Complete server action test coverage (30 tests)
-- Component tests for tenants, rent, dashboard, maintenance (107 tests)
-- Layout component tests (5 tests)
-- Page component tests (15 tests) - **NEW: Settings, Communications, Maintenance pages**
-- Rent chart tests (4 tests) - **NEW**
-- Theme provider tests (2 tests) - **NEW**
-- Proper mocking of Supabase and Next.js cache
-- Co-located test structure
-- Fast test execution (~8.5s for 163 tests)
+- **What's Working**:
+- Server action suites now span 77 tests, covering success and failure paths for tenants, rent, maintenance, documents, communications, and dashboards.
+- Component tests for tenants, rent, dashboard, maintenance, documents, communications, and settings remain stable.
+- Layout component tests (sidebar, header, dashboard layout) pass with router stubs.
+- Page component tests (dashboard + feature pages) still verified.
+- App layout tests (root + dashboard wrapper) solidified.
+- Dynamic document page tests and download API proxy coverage maintained.
+- UI primitives smoke tests (14 components) ensure basic render coverage.
+- Supabase and Next.js cache mocks shared via helpers.
+- Fast test execution (~20s for 289 tests) when run with `--runInBand`.
 
 **What Needs Work**:
-- Coverage at 36.57% (target 60%+, need +23.43%)
-- Document components untested (0% coverage - 5 files)
-- Communication form untested (communications page now at 47.74%)
-- Payment reminder generator untested
-- No integration or E2E tests yet
-- Limited edge case coverage in server actions (69.19%, target 100%)
-- No visual regression testing
+- Coverage at 57.62% (target 60%+, need +2.38%).
+- UI primitives at ~15% (50+ components, many wrappers untested).
+- Auth pages remain untested (0% coverage).
+- No integration or E2E tests yet.
+- Maintenance server actions still use older mocks and miss some failure branches.
+- No visual regression testing.
+- `npm run test:coverage` still crashes without `--runInBand`.
 
 **Key Principle**: **Test behavior, not implementation**
 

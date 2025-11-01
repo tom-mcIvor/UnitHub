@@ -163,13 +163,14 @@ The codebase is structured to easily extend with:
 - Basic authentication system using Supabase Auth.
 - Middleware to protect all routes.
 - Login, signup, and callback pages.
+- Reusable `SignInForm` component powers both the dedicated login route and the in-app modal launched from the dashboard header, keeping users in flow while signing in.
 
 ### 9. Testing Infrastructure
 - **Jest** with React Testing Library for unit/component testing
-- **243 tests** covering server actions, components, pages, layouts, API routes, and UI primitives
-- **55.05% code coverage** (target: 60%+, up from 36.57% baseline; +1.45% this session)
+- **289 tests** covering server actions, components, pages, layouts, API routes, and UI primitives
+- **58.59% code coverage** (target: 60%+, up from 36.57% baseline; +0.97% this session)
 - Co-located test structure (`__tests__/` directories)
-- 100% test pass rate (243/243 passing)
+- 100% test pass rate (289/289 passing)
 - Test coverage areas:
   - Settings: 100% coverage
   - Dashboard layout: 100% coverage
@@ -181,13 +182,13 @@ The codebase is structured to easily extend with:
   - Maintenance components: 75% coverage
   - Tenants components: 74% coverage
   - Communications components: 72% coverage
-  - Server actions: 76.78% coverage (rent.ts 100% after edge case tests)
+  - Server actions: 99.10% coverage (rent.ts 100%, documents.ts 98.9%, tenants.ts 100%, communications.ts 100%, maintenance.ts 100% after edge case tests)
   - AI API routes: 100% coverage
   - Documents [id] page: 90% coverage
   - Download API route: 75% coverage
   - UI primitives: 15% coverage (smoke tests)
 - See `docs/testing-roadmap.md` for testing plan
-- See `docs/test-expansion-2025-11-01-coverage-push.md` and `docs/test-expansion-2025-11-01-server-actions.md` for latest changes
+- See `docs/test-expansion-2025-11-01-coverage-push.md`, `docs/test-expansion-2025-11-01-server-actions.md`, `docs/test-expansion-2025-11-01-documents-server-actions.md`, `docs/test-expansion-2025-11-01-tenants-server-actions.md`, `docs/test-expansion-2025-11-01-communications-server-actions.md`, and `docs/test-expansion-2025-11-01-maintenance-server-actions.md` for latest changes
 
 ### 10. CI/CD Pipeline
 - **GitHub Actions** workflows for automated testing and code review

@@ -23,6 +23,7 @@ import {
 import { deleteDocument } from "@/app/actions/documents"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { toast } from "sonner"
 
 interface DocumentsPageProps {
   initialDocuments: DocumentWithTenant[]
@@ -52,12 +53,13 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
       if (result.success) {
         router.refresh()
         setDeletingDocument(null)
+        toast.success("Document deleted")
       } else {
-        alert(`Failed to delete document: ${result.error}`)
+        toast.error(result.error || "Failed to delete document")
       }
     } catch (err) {
       console.error('Error deleting document:', err)
-      alert('An unexpected error occurred')
+      toast.error('Unexpected error deleting document')
     } finally {
       setIsDeleting(false)
     }
@@ -198,6 +200,7 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                     variant="ghost"
                     size="sm"
                     className="p-1"
+                    aria-label={`Edit document ${doc.title}`}
                     onClick={() => handleEdit(doc)}
                   >
                     <Edit2 size={16} />
@@ -208,6 +211,7 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                     className="p-1"
                     asChild
                     disabled={!doc.storagePath && !doc.fileUrl}
+                    aria-label={`Download document ${doc.title}`}
                   >
                     {doc.storagePath ? (
                       <Link
@@ -227,6 +231,7 @@ export function DocumentsPage({ initialDocuments, tenants, error }: DocumentsPag
                     variant="ghost"
                     size="sm"
                     className="p-1 text-red-600 hover:text-red-700"
+                    aria-label={`Delete document ${doc.title}`}
                     onClick={() => setDeletingDocument(doc)}
                   >
                     <Trash2 size={16} />

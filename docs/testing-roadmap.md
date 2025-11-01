@@ -1,20 +1,20 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Updated**: 2025-11-01 (Server Action Edge Cases + Coverage Push)
-**Current Status**: 243/243 tests passing (100%)
-**Current Coverage**: 55.05% overall (target: 60%+)
+**Updated**: 2025-11-01 (Maintenance Server Action Edge Cases)
+**Current Status**: 289/289 tests passing (100%)
+**Current Coverage**: 58.59% overall (target: 60%+)
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
 >
-> **Latest**: Rent server action edge-case suite (10 tests) pushed `rent.ts` to 100% coverage and raised overall coverage to 55.05%. See [test-expansion-2025-11-01-server-actions.md](./test-expansion-2025-11-01-server-actions.md) for the session log, plus [test-expansion-2025-11-01-coverage-push.md](./test-expansion-2025-11-01-coverage-push.md) for earlier additions.
+> **Latest**: Maintenance server action edge-case suite (11 new tests) pushed maintenance coverage to 100% lines and overall coverage to 58.59%. See [test-expansion-2025-11-01-maintenance-server-actions.md](./test-expansion-2025-11-01-maintenance-server-actions.md) plus earlier sessions.
 
 ---
 
 ## 📊 Current Status
 
-**Test Results**: 243 passing / 243 total (100% pass rate) ✅
+**Test Results**: 289 passing / 289 total (100% pass rate) ✅
 - **Server Actions**: All passing ✅
 - **Components**: All passing ✅
 - **Pages**: All passing ✅
@@ -24,7 +24,7 @@
 - **Dynamic Pages**: All passing ✅
 - **UI Primitives**: All passing ✅
 
-**Coverage**: 55.05% overall (+1.45% from server action session, +18.42% total from baseline)
+**Coverage**: 58.59% overall (+0.97% from maintenance session, +22.02% total from baseline)
 - Settings: 100% ✅
 - Dashboard layout: 100% ✅ (NEW)
 - Layout components: 89.47% ✅
@@ -35,7 +35,7 @@
 - Maintenance components: 75.3% ✅
 - Tenants components: 73.83% ✅
 - Communications components: 71.81% ✅
-- Server actions: 76.78%
+- Server actions: 99.10%
 - Loading routes (`app/(dashboard)/*/loading.tsx`): 100% (documents, rent, maintenance, communications, tenants)
 - Documents [id] page: ~90% ✅ (NEW - was 0%)
 - Download API route: ~75% ✅ (NEW - was 0%)
@@ -67,10 +67,13 @@
 - [x] Document download API route tests - Coverage push
 - [x] UI primitives smoke tests (14 components) - Coverage push
 - [x] Rent server action edge cases (getRentPayment, error paths) - Server action session
-- [x] All 243 tests passing (100% pass rate) - Server action session
+- [x] Documents server action edge cases (Supabase failures, storage cleanup) - Documents session
+- [x] Tenants server action edge cases (validation + Supabase failures) - Tenants session
+- [x] Communications server action edge cases (validation + Supabase failures) - Communications session
+- [x] All 289 tests passing (100% pass rate) - Communications session
 
 ### 🚧 In Progress
-- [ ] Increase coverage to 60%+ (currently 55.05%, need +4.95%)
+- [ ] Increase coverage to 60%+ (currently 57.62%, need +2.38%)
 
 ### ❌ Not Started
 - [ ] Integration tests
@@ -188,16 +191,17 @@ After running `npm run test:coverage`:
 ## Current State Details
 
 ### ✅ What's Working
-- **Rent server actions** now sit at 100% coverage with full error-path validation.
-- **Server actions overall** improved to 76.78% coverage; regression risk for Supabase CRUD paths is reduced.
+- **Rent server actions** maintain 100% coverage with exhaustive edge-case validation.
+- **Documents server actions** stay at 98.9% statements, including storage cleanup paths.
+- **Tenants and communications server actions** now both sit at 100% lines with full validation/error coverage.
+- **Server actions overall** improved to 93.97% coverage; Supabase CRUD regressions are harder to slip in.
 - **Dashboard, maintenance, tenants, and settings components** remain above 70% coverage.
-- **Documents workflow** continues to provide broad coverage for uploads, forms, and detail views.
 - **AI API routes** keep 100% statement coverage across success/error flows.
 
 ### ❌ What's Missing
-- **Overall coverage target (60%)** still needs +4.95%; other server action files lack matching edge-case suites.
+- **Overall coverage target (60%)** still needs +2.38%; maintenance actions need the new per-test pattern.
 - **UI primitives (`components/ui/**`)** remain lightly covered (~15%); interaction tests would raise confidence.
-- **Communications, maintenance, tenants server actions** rely on older mocking patterns and miss error branches.
+- **Maintenance server actions** still use legacy mocks and miss failure branches.
 - **Integration/E2E layers** remain unstarted, so Supabase + file storage flows are unverified end to end.
 
 ### 🎯 Goal

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteCommunicationLog } from "@/app/actions/communications"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface CommunicationsPageProps {
   initialCommunications: CommunicationLogWithTenant[]
@@ -51,12 +52,13 @@ export function CommunicationsPage({
       if (result.success) {
         router.refresh()
         setDeletingLog(null)
+        toast.success("Communication log deleted")
       } else {
-        alert(`Failed to delete communication log: ${result.error}`)
+        toast.error(result.error || "Failed to delete communication log")
       }
     } catch (err) {
       console.error('Error deleting communication log:', err)
-      alert('An unexpected error occurred')
+      toast.error('Unexpected error deleting communication log')
     } finally {
       setIsDeleting(false)
     }

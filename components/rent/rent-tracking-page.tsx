@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteRentPayment } from "@/app/actions/rent"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface RentTrackingPageProps {
   initialPayments: RentPaymentWithTenant[]
@@ -53,12 +54,13 @@ export function RentTrackingPage({ initialPayments, tenants, error }: RentTracki
       if (result.success) {
         router.refresh()
         setDeletingPayment(null)
+        toast.success("Rent payment deleted")
       } else {
-        alert(`Failed to delete payment: ${result.error}`)
+        toast.error(result.error || "Failed to delete payment")
       }
     } catch (err) {
       console.error('Error deleting rent payment:', err)
-      alert('An unexpected error occurred')
+      toast.error('Unexpected error deleting rent payment')
     } finally {
       setIsDeleting(false)
     }

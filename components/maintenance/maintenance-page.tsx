@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteMaintenanceRequest } from "@/app/actions/maintenance"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface MaintenancePageProps {
   initialRequests: MaintenanceRequestWithTenant[]
@@ -58,12 +59,13 @@ export function MaintenancePage({
       if (result.success) {
         router.refresh()
         setDeletingRequest(null)
+        toast.success("Maintenance request deleted")
       } else {
-        alert(`Failed to delete request: ${result.error}`)
+        toast.error(result.error || "Failed to delete maintenance request")
       }
     } catch (err) {
       console.error('Error deleting maintenance request:', err)
-      alert('An unexpected error occurred')
+      toast.error('Unexpected error deleting maintenance request')
     } finally {
       setIsDeleting(false)
     }

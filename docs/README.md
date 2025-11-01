@@ -25,6 +25,10 @@ The testing roadmap is your complete testing guide containing:
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
 
 **Recent Test Expansion Sessions:**
+- **[Maintenance Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-maintenance-server-actions.md)** - Maintenance actions 100% lines, overall coverage 58.59%
+- **[Communications Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-communications-server-actions.md)** - Full error coverage, overall coverage 57.62%
+- **[Tenants Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-tenants-server-actions.md)** - Align tenants actions with per-test mocks, coverage 56.84%
+- **[Documents Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-documents-server-actions.md)** - Supabase failure paths, storage cleanup, header test stabilisation
 - **[Server Action Edge Cases (2025-11-01)](./test-expansion-2025-11-01-server-actions.md)** - Rent actions 57.5% → 100%, overall coverage 55.05%
 - **[Coverage Push Session (2025-11-01)](./test-expansion-2025-11-01-coverage-push.md)** - Layouts, dynamic pages, API routes, UI primitives (+36 tests, 53.6% coverage)
 - **[Documents Workflow Expansion](./test-expansion-documents-workflow.md)** - Document upload, forms, detail views, lease extraction
@@ -91,4 +95,4 @@ The testing roadmap is your complete testing guide containing:
 
 ---
 
-**Last Updated**: 2025-11-01 (Server action edge case coverage push)
+**Last Updated**: 2025-11-01 (Maintenance server action edge cases)

@@ -87,7 +87,7 @@ Added `loading.tsx` files for all main feature pages to provide visual feedback 
 **Files Created**: `/app/tenants/loading.tsx`, `/app/rent/loading.tsx`, `/app/maintenance/loading.tsx`, `/app/documents/loading.tsx`, `/app/communications/loading.tsx`
 
 ### Authentication
-Implemented basic authentication system using Supabase Auth with middleware to protect routes and login/signup pages.
+Implemented basic authentication system using Supabase Auth with middleware to protect routes and login/signup pages. The shared `SignInForm` client component now handles email/password flows and can render inline (dashboard modal) or on the standalone login page for a consistent experience.
 
 **Files Created**: `/middleware.ts`, `/app/auth/login/page.tsx`, `/app/auth/signup/page.tsx`, `/app/auth/callback/page.tsx`
 

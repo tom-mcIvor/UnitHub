@@ -185,10 +185,8 @@ Modified 2 files and added a new form component so document metadata can be upda
 ## What Could Have Been Done But Wasn't
 
 ### Toast Notifications Instead of Alerts
-- `sonner` library already installed in package.json
-- Could replace `alert()` calls with toast notifications for better UX
-- Would need to add `<Toaster />` provider component
-- Not implemented to keep changes minimal
+- `sonner` library now powers success/error feedback across tenant, rent, maintenance, communications, and document lists (replaced blocking alerts).
+- Remaining opportunity: extend toast messaging to creation/edit success states and long-running operations.
 
 ### Confirmation Dialog for Edits
 - Could add "Are you sure?" before submitting edits

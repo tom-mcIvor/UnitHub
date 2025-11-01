@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { deleteTenant } from "@/app/actions/tenants"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface TenantsListProps {
   initialTenants: Tenant[]
@@ -52,12 +53,13 @@ export function TenantsList({ initialTenants, error }: TenantsListProps) {
       if (result.success) {
         router.refresh()
         setDeletingTenant(null)
+        toast.success("Tenant deleted")
       } else {
-        alert(`Failed to delete tenant: ${result.error}`)
+        toast.error(result.error || "Failed to delete tenant")
       }
     } catch (err) {
       console.error('Error deleting tenant:', err)
-      alert('An unexpected error occurred')
+      toast.error('Unexpected error deleting tenant')
     } finally {
       setIsDeleting(false)
     }

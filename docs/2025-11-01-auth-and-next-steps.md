@@ -25,7 +25,7 @@ Implemented dynamic status calculation in `app/actions/rent.ts`:
 ## Recommended Next Steps (Priority Order)
 
 1.  **Add Edit and Delete UI** to all feature pages (rent, maintenance, documents, communications)
-2.  **Add toast notifications** using the already-installed `sonner` library for better user feedback
+2.  **Expand toast notifications** beyond destructive flows—success, error, and long-running states should all route through the shared `sonner` toasts.
 3.  **Complete Authentication Implementation:**
     *   Add a `user_id` column to all relevant database tables
     *   Enable and configure Row Level Security (RLS) policies in Supabase
