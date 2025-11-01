@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { DocumentForm } from "../document-form"
 import { createDocument, updateDocument } from "@/app/actions/documents"
+import { toast } from "sonner"
 
 const refreshMock = jest.fn()
 
@@ -15,6 +16,14 @@ jest.mock("@/app/actions/documents", () => ({
   ...(jest.requireActual("@/app/actions/documents") as object),
   createDocument: jest.fn(),
   updateDocument: jest.fn(),
+}))
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
 }))
 
 const tenants = [
@@ -36,6 +45,7 @@ describe("DocumentForm", () => {
     ;(updateDocument as jest.Mock).mockReset()
     ;(createDocument as jest.Mock).mockResolvedValue({ success: true, error: null, data: null })
     ;(updateDocument as jest.Mock).mockResolvedValue({ success: true, error: null, data: null })
+    jest.clearAllMocks()
   })
 
   afterEach(() => {
@@ -49,7 +59,7 @@ describe("DocumentForm", () => {
 
     await user.click(screen.getByRole("button", { name: /save document/i }))
 
-    expect(await screen.findAllByText(/required/i)).not.toHaveLength(0)
+    expect(await screen.findAllByText(/is required/i)).not.toHaveLength(0)
     expect(createDocument).not.toHaveBeenCalled()
   })
 
@@ -84,7 +94,7 @@ describe("DocumentForm", () => {
       ]),
     )
 
-    expect(screen.getByText(/document saved successfully/i)).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith("Document saved successfully!")
     expect(refreshMock).toHaveBeenCalled()
 
     act(() => {
@@ -127,7 +137,7 @@ describe("DocumentForm", () => {
       )
     })
 
-    expect(screen.getByText(/document updated successfully/i)).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith("Document updated successfully!")
     expect(refreshMock).toHaveBeenCalled()
 
     act(() => {
@@ -153,7 +163,7 @@ describe("DocumentForm", () => {
     await user.click(screen.getByRole("button", { name: /save document/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to save document/i)).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith("Failed to save document")
     })
   })
 })

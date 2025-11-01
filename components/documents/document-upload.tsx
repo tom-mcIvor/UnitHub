@@ -11,6 +11,7 @@ import type { Tenant } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { createClient as createSupabaseClient } from "@/lib/supabase/client"
 import { createDocument } from "@/app/actions/documents"
+import { toast } from "sonner"
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ?? "UnitHubDocuments"
 
@@ -23,8 +24,6 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     tenantId: "",
     title: "",
@@ -50,7 +49,6 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
     const file = e.dataTransfer.files?.[0]
     if (file) {
       setSelectedFile(file)
-      setError(null)
     }
   }
 
@@ -58,7 +56,6 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
     const file = e.target.files?.[0]
     if (file) {
       setSelectedFile(file)
-      setError(null)
     }
   }
 
@@ -75,19 +72,17 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
     e.preventDefault()
 
     if (!selectedFile) {
-      setError("Please select a file to upload.")
+      toast.error("Please select a file to upload.")
       return
     }
 
     const title = formData.title.trim()
     if (!title) {
-      setError("Please provide a document title.")
+      toast.error("Please provide a document title.")
       return
     }
 
     setIsUploading(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       const supabase = createSupabaseClient()
@@ -107,7 +102,7 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
 
       if (uploadError) {
         console.error("Error uploading document:", uploadError)
-        setError(uploadError.message || "Failed to upload document.")
+        toast.error(uploadError.message || "Failed to upload document.")
         return
       }
 
@@ -116,7 +111,7 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
       } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path)
 
       if (!publicUrl) {
-        setError("Could not generate document URL after upload.")
+        toast.error("Could not generate document URL after upload.")
         return
       }
 
@@ -129,16 +124,16 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
 
       const result = await createDocument(payload)
       if (!result.success) {
-        setError(result.error ?? "Failed to save document metadata.")
+        toast.error(result.error ?? "Failed to save document metadata.")
         return
       }
 
-      setSuccess(true)
+      toast.success("Document uploaded successfully!")
       router.refresh()
-      setTimeout(() => {
-        resetForm()
-        onClose()
-      }, 1000)
+      resetForm()
+      onClose()
+    } catch (err) {
+      toast.error("An unexpected error occurred during upload.")
     } finally {
       setIsUploading(false)
     }
@@ -155,18 +150,6 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-              Document uploaded successfully!
-            </div>
-          )}
-
           <div>
             <label className="mb-2 block text-sm font-medium text-text">Tenant *</label>
             <select
@@ -203,7 +186,6 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
               value={formData.title}
               onChange={(e) => {
                 setFormData({ ...formData, title: e.target.value })
-                if (error) setError(null)
               }}
               placeholder="Document title"
               required
@@ -251,7 +233,7 @@ export function DocumentUpload({ onClose, tenants = [] }: DocumentUploadProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isUploading || !selectedFile}>
-              {isUploading ? "Uploading..." : success ? "Uploaded!" : "Upload"}
+              {isUploading ? "Uploading..." : "Upload"}
             </Button>
           </div>
         </form>

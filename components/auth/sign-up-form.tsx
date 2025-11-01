@@ -19,38 +19,38 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 
-type SignInFormProps = {
-  onSignedIn?: () => void
-  onSwitchToSignUp?: () => void
-  initialMessage?: string | null
+type SignUpFormProps = {
+  onSignedUp?: () => void
+  onSwitchToSignIn?: () => void
 }
 
-export function SignInForm({ onSignedIn, onSwitchToSignUp, initialMessage }: SignInFormProps) {
+export function SignUpForm({ onSignedUp, onSwitchToSignIn }: SignUpFormProps) {
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(
-    initialMessage ?? searchParams?.get('message') ?? null,
+    searchParams?.get('message') ?? null,
   )
 
   useEffect(() => {
-    setNotice(initialMessage ?? searchParams?.get('message') ?? null)
-  }, [initialMessage, searchParams])
+    setNotice(searchParams?.get('message') ?? null)
+  }, [searchParams])
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        onSignedIn?.()
+        onSignedUp?.()
       }
     })
 
     return () => {
       listener?.subscription.unsubscribe()
     }
-  }, [onSignedIn, supabase])
+  }, [onSignedUp, supabase])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -59,48 +59,56 @@ export function SignInForm({ onSignedIn, onSwitchToSignUp, initialMessage }: Sig
     setIsLoading(true)
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) {
-        setError(signInError.message)
+      if (password !== confirmPassword) {
+        setError('Passwords do not match')
         return
       }
 
-      onSignedIn?.()
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (signUpError) {
+        setError(signUpError.message)
+        return
+      }
+
+      setNotice('Check your email to verify your account')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     setError(null)
     setNotice(null)
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithOAuth({
+      const { error: signUpError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
-      if (signInError) {
-        setError(signInError.message)
+      if (signUpError) {
+        setError(signUpError.message)
       }
     } catch (err) {
-      setError('Failed to sign in with Google')
+      setError('Failed to sign up with Google')
     }
   }
 
   return (
     <Card className="w-full max-w-md border-border">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold">Welcome back</CardTitle>
+        <CardTitle className="text-2xl font-semibold">Create an account</CardTitle>
         <CardDescription>
-          Sign in to manage your properties and tenants.
+          Sign up to start managing your properties and tenants.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -114,7 +122,7 @@ export function SignInForm({ onSignedIn, onSwitchToSignUp, initialMessage }: Sig
           type="button"
           variant="outline"
           className="w-full"
-          onClick={handleGoogleSignIn}
+          onClick={handleGoogleSignUp}
           disabled={isLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -169,10 +177,23 @@ export function SignInForm({ onSignedIn, onSwitchToSignUp, initialMessage }: Sig
               <Input
                 id="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="********"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="********"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
                 required
               />
             </div>
@@ -182,30 +203,30 @@ export function SignInForm({ onSignedIn, onSwitchToSignUp, initialMessage }: Sig
             {isLoading ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Signing in...
+                Creating account...
               </>
             ) : (
-              'Sign in'
+              'Create account'
             )}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="flex-col items-center gap-2">
-        <p className="text-sm text-text-secondary">Need an account?</p>
-        {onSwitchToSignUp ? (
+        <p className="text-sm text-text-secondary">Already have an account?</p>
+        {onSwitchToSignIn ? (
           <button
             type="button"
-            onClick={onSwitchToSignUp}
+            onClick={onSwitchToSignIn}
             className="text-sm font-medium text-primary hover:underline"
           >
-            Create your UnitHub account
+            Sign in to UnitHub
           </button>
         ) : (
           <Link
-            href="/auth/signup"
+            href="/auth/login"
             className="text-sm font-medium text-primary hover:underline"
           >
-            Create your UnitHub account
+            Sign in to UnitHub
           </Link>
         )}
       </CardFooter>

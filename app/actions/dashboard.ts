@@ -47,11 +47,20 @@ export async function getDashboardStats(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        success: false,
+        data: null,
+        error: 'User not authenticated',
+      }
+    }
 
     // Get total tenants count
     const { count: totalTenants, error: tenantsError } = await supabase
       .from('tenants')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
 
     if (tenantsError) throw tenantsError
 
@@ -59,6 +68,7 @@ export async function getDashboardStats(): Promise<{
     const { data: tenantsData, error: rentError } = await supabase
       .from('tenants')
       .select('rent_amount')
+      .eq('user_id', user.id)
 
     if (rentError) throw rentError
 
@@ -70,6 +80,7 @@ export async function getDashboardStats(): Promise<{
     const { count: pendingPayments, error: paymentsError } = await supabase
       .from('rent_payments')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
       .in('status', ['pending', 'overdue'])
 
     if (paymentsError) throw paymentsError
@@ -78,6 +89,7 @@ export async function getDashboardStats(): Promise<{
     const { count: openMaintenance, error: maintenanceError } = await supabase
       .from('maintenance_requests')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
       .in('status', ['open', 'in-progress'])
 
     if (maintenanceError) throw maintenanceError
@@ -112,10 +124,19 @@ export async function getRecentTenants(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        success: false,
+        data: null,
+        error: 'User not authenticated',
+      }
+    }
 
     const { data, error } = await supabase
       .from('tenants')
       .select('id, name, unit_number, lease_start:lease_start_date, created_at')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(4)
 
@@ -146,6 +167,14 @@ export async function getUpcomingPayments(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        success: false,
+        data: null,
+        error: 'User not authenticated',
+      }
+    }
 
     // Get payments that are pending or overdue, and due within next 30 days
     const thirtyDaysFromNow = new Date()
@@ -164,6 +193,7 @@ export async function getUpcomingPayments(): Promise<{
           unit_number
         )
       `)
+      .eq('user_id', user.id)
       .in('status', ['pending', 'overdue'])
       .lte('due_date', thirtyDaysFromNow.toISOString().split('T')[0])
       .order('due_date', { ascending: true })
@@ -207,6 +237,14 @@ export async function getRecentMaintenanceRequests(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        success: false,
+        data: null,
+        error: 'User not authenticated',
+      }
+    }
 
     const { data, error } = await supabase
       .from('maintenance_requests')
@@ -221,6 +259,7 @@ export async function getRecentMaintenanceRequests(): Promise<{
           unit_number
         )
       `)
+      .eq('user_id', user.id)
       .in('status', ['open', 'in-progress'])
       .order('created_at', { ascending: false })
       .limit(5)

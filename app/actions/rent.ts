@@ -57,16 +57,21 @@ export async function getRentPayments(): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('rent_payments')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
           unit_number
         )
-      `)
+      `
+      )
+      .eq('user_id', user.id)
       .order('due_date', { ascending: false })
 
     if (error) {
@@ -89,17 +94,22 @@ export async function getRentPayment(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { data: null, error: 'User not authenticated' }
 
     const { data, error } = await supabase
       .from('rent_payments')
-      .select(`
+      .select(
+        `
         *,
         tenants (
           name,
           unit_number
         )
-      `)
+      `
+      )
       .eq('id', id)
+      .eq('user_id', user.id)
       .single()
 
     if (error) {
@@ -122,6 +132,8 @@ export async function createRentPayment(formData: FormData): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = rentPaymentSchema.safeParse({
@@ -144,6 +156,7 @@ export async function createRentPayment(formData: FormData): Promise<{
     const { data, error } = await supabase
       .from('rent_payments')
       .insert({
+        user_id: user.id,
         tenant_id: tenantId,
         amount: amount,
         due_date: dueDate,
@@ -192,6 +205,8 @@ export async function updateRentPayment(
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated', data: null }
 
     const rawData = Object.fromEntries(formData.entries())
     const parsed = rentPaymentSchema.safeParse({
@@ -223,6 +238,7 @@ export async function updateRentPayment(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('user_id', user.id)
       .select()
       .single()
 
@@ -260,11 +276,14 @@ export async function deleteRentPayment(id: string): Promise<{
 }> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'User not authenticated' }
 
     const { error } = await supabase
       .from('rent_payments')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error deleting rent payment:', error)

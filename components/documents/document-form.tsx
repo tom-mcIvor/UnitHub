@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import { createDocument, updateDocument, type DocumentWithTenant } from "@/app/actions/documents"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import type { Tenant } from "@/lib/types"
 
 interface DocumentFormProps {
@@ -21,8 +22,6 @@ interface DocumentFormProps {
 
 export function DocumentForm({ onClose, tenants = [], editingDocument, initialData }: DocumentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingDocument
 
@@ -42,8 +41,6 @@ export function DocumentForm({ onClose, tenants = [], editingDocument, initialDa
 
   const onSubmit = async (data: DocumentFormData) => {
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       const formData = new FormData()
@@ -61,14 +58,14 @@ export function DocumentForm({ onClose, tenants = [], editingDocument, initialDa
         : await createDocument(formData)
 
       if (result.success) {
-        setSuccess(true)
+        toast.success(`Document ${isEditing ? "updated" : "saved"} successfully!`)
         router.refresh()
-        setTimeout(() => {
-          onClose()
-        }, 1000)
+        onClose()
       } else {
-        setError(result.error || `Failed to ${isEditing ? "update" : "save"} document`)
+        toast.error(result.error || `Failed to ${isEditing ? "update" : "save"} document`)
       }
+    } catch (err) {
+      toast.error("An unexpected error occurred")
     } finally {
       setIsSubmitting(false)
     }
@@ -85,20 +82,6 @@ export function DocumentForm({ onClose, tenants = [], editingDocument, initialDa
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">
-                Document {isEditing ? "updated" : "saved"} successfully!
-              </p>
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-text mb-2">Tenant</label>
             <select
@@ -145,8 +128,8 @@ export function DocumentForm({ onClose, tenants = [], editingDocument, initialDa
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || success}>
-              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Document" : "Save Document"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditing ? "Update Document" : "Save Document"}
             </Button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { DocumentUpload } from "../document-upload"
 import { createClient as createSupabaseClient } from "@/lib/supabase/client"
 import { createDocument } from "@/app/actions/documents"
+import { toast } from "sonner"
 
 const refreshMock = jest.fn()
 
@@ -35,6 +36,14 @@ jest.mock("@/lib/supabase/client", () => {
 jest.mock("@/app/actions/documents", () => ({
   ...(jest.requireActual("@/app/actions/documents") as object),
   createDocument: jest.fn(),
+}))
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
 }))
 
 const supabaseClientModule = jest.requireMock("@/lib/supabase/client") as {
@@ -88,6 +97,7 @@ afterAll(() => {
     ;(createDocument as jest.Mock).mockReset()
     refreshMock.mockClear()
     mockRandomUUID.mockClear()
+    jest.clearAllMocks()
 
     uploadMock.mockResolvedValue({ error: null })
     getPublicUrlMock.mockReturnValue({ data: { publicUrl: "https://example.com/mock.pdf" } })
@@ -178,7 +188,7 @@ afterAll(() => {
     )
 
     expect(refreshMock).toHaveBeenCalled()
-    expect(await screen.findByText(/document uploaded successfully/i)).toBeInTheDocument()
+    expect(toast.success).toHaveBeenCalledWith("Document uploaded successfully!")
 
     act(() => {
       jest.advanceTimersByTime(1000)
@@ -201,7 +211,7 @@ afterAll(() => {
     await user.click(screen.getByRole("button", { name: /^upload$/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/upload failed/i)).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith("Upload failed")
     })
     expect(createDocument).not.toHaveBeenCalled()
     consoleErrorSpy.mockRestore()

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 import { createCommunicationLog, updateCommunicationLog } from "@/app/actions/communications"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import type { Tenant } from "@/lib/types"
 import type { CommunicationLogWithTenant } from "@/app/actions/communications"
 
@@ -22,8 +23,6 @@ interface CommunicationFormProps {
 
 export function CommunicationForm({ onClose, tenants = [], editingLog, initialData }: CommunicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingLog
 
@@ -38,8 +37,6 @@ export function CommunicationForm({ onClose, tenants = [], editingLog, initialDa
 
   const onSubmit = async (data: CommunicationLogFormData) => {
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       // Convert to FormData for server action
@@ -54,14 +51,14 @@ export function CommunicationForm({ onClose, tenants = [], editingLog, initialDa
         : await createCommunicationLog(formData)
 
       if (result.success) {
-        setSuccess(true)
+        toast.success(`Communication ${isEditing ? 'updated' : 'logged'} successfully!`)
         router.refresh()
-        setTimeout(() => {
-          onClose()
-        }, 1000)
+        onClose()
       } else {
-        setError(result.error || `Failed to ${isEditing ? 'update' : 'log'} communication`)
+        toast.error(result.error || `Failed to ${isEditing ? 'update' : 'log'} communication`)
       }
+    } catch (err) {
+      toast.error("An unexpected error occurred")
     } finally {
       setIsSubmitting(false)
     }
@@ -78,20 +75,6 @@ export function CommunicationForm({ onClose, tenants = [], editingLog, initialDa
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">
-                Communication {isEditing ? 'updated' : 'logged'} successfully!
-              </p>
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-text mb-2">Tenant *</label>
             <select
@@ -143,14 +126,12 @@ export function CommunicationForm({ onClose, tenants = [], editingLog, initialDa
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || success}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? "Saving..."
-                : success
-                  ? "Saved!"
-                  : isEditing
-                    ? "Update Communication"
-                    : "Log Communication"}
+                : isEditing
+                  ? "Update Communication"
+                  : "Log Communication"}
             </Button>
           </div>
         </form>

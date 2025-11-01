@@ -23,8 +23,6 @@ interface RentPaymentFormProps {
 
 export function RentPaymentForm({ onClose, tenants = [], editingPayment, initialData }: RentPaymentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingPayment
 
@@ -39,8 +37,6 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
 
   const onSubmit = async (data: RentPaymentFormData) => {
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       // Convert to FormData for server action
@@ -60,18 +56,13 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
 
       if (result.success) {
         toast.success(`Payment ${isEditing ? 'updated' : 'recorded'} successfully`)
-        setSuccess(true)
         router.refresh()
-        setTimeout(() => {
-          onClose()
-        }, 800)
+        onClose()
       } else {
         toast.error(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
-        setError(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
       }
     } catch (error) {
       toast.error('An unexpected error occurred')
-      setError('An unexpected error occurred')
     } finally {
       setIsSubmitting(false)
     }
@@ -88,18 +79,6 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">Payment {isEditing ? 'updated' : 'recorded'} successfully!</p>
-            </div>
-          )}
-
           <div>
             <label className="block text-sm font-medium text-text mb-2">Tenant *</label>
             <select
@@ -117,8 +96,8 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-2">Amount *</label>
-            <Input {...register("amount", { valueAsNumber: true })} type="number" placeholder="1200" />
+            <label htmlFor="amount" className="block text-sm font-medium text-text mb-2">Amount *</label>
+            <Input id="amount" {...register("amount", { valueAsNumber: true })} type="number" placeholder="1200" />
             {errors.amount && <p className="text-red-600 text-sm mt-1">{errors.amount.message}</p>}
           </div>
 
@@ -160,8 +139,8 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || success}>
-              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Payment" : "Record Payment"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditing ? "Update Payment" : "Record Payment"}
             </Button>
           </div>
         </form>

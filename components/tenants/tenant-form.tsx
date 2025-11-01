@@ -7,9 +7,10 @@ import { tenantSchema, type TenantFormData } from "@/lib/schemas"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { X, CheckCircle, AlertCircle } from "lucide-react"
+import { X } from "lucide-react"
 import { createTenant, updateTenant } from "@/app/actions/tenants"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import type { Tenant } from "@/lib/types"
 
 interface TenantFormProps {
@@ -21,8 +22,6 @@ interface TenantFormProps {
 
 export function TenantForm({ onClose, initialData, editingTenant, onSuccess }: TenantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingTenant
 
@@ -37,7 +36,6 @@ export function TenantForm({ onClose, initialData, editingTenant, onSuccess }: T
 
   const onSubmit = async (data: TenantFormData) => {
     setIsSubmitting(true)
-    setError(null)
 
     try {
       // Convert form data to FormData for server action
@@ -51,21 +49,18 @@ export function TenantForm({ onClose, initialData, editingTenant, onSuccess }: T
         : await createTenant(formData)
 
       if (result.success) {
-        setSuccess(true)
+        toast.success(`Tenant ${isEditing ? 'updated' : 'created'} successfully!`)
         // Call onSuccess callback if provided (for optimistic updates)
         if (result.data && onSuccess) {
           onSuccess(result.data)
         }
-        // Wait a moment to show success message
-        setTimeout(() => {
-          router.refresh() // Refresh the page data
-          onClose()
-        }, 1000)
+        router.refresh() // Refresh the page data
+        onClose()
       } else {
-        setError(result.error || `Failed to ${isEditing ? 'update' : 'create'} tenant`)
+        toast.error(result.error || `Failed to ${isEditing ? 'update' : 'create'} tenant`)
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      toast.error('An unexpected error occurred')
       console.error('Error submitting form:', err)
     } finally {
       setIsSubmitting(false)
@@ -148,26 +143,12 @@ export function TenantForm({ onClose, initialData, editingTenant, onSuccess }: T
             />
           </div>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-              <AlertCircle size={20} />
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
-              <CheckCircle size={20} />
-              <p className="text-sm">Tenant {isEditing ? 'updated' : 'created'} successfully!</p>
-            </div>
-          )}
-
           <div className="flex gap-3 justify-end pt-4">
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || success}>
-              {isSubmitting ? "Saving..." : success ? "Saved!" : isEditing ? "Update Tenant" : "Save Tenant"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditing ? "Update Tenant" : "Save Tenant"}
             </Button>
           </div>
         </form>

@@ -1,50 +1,44 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Updated**: 2025-11-01 (Maintenance Server Action Edge Cases)
-**Current Status**: 289/289 tests passing (100%)
-**Current Coverage**: 58.59% overall (target: 60%+)
+**Updated**: 2025-11-01
+**Current Status**: 276/303 tests passing (91%)
+**Current Coverage**: 54.83% overall (target: 60%+)
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
 >
-> **Latest**: Maintenance server action edge-case suite (11 new tests) pushed maintenance coverage to 100% lines and overall coverage to 58.59%. See [test-expansion-2025-11-01-maintenance-server-actions.md](./test-expansion-2025-11-01-maintenance-server-actions.md) plus earlier sessions.
+> **Latest**: Added tests for the `Card` and `Dialog` UI components. The `Dialog` component tests are currently failing. See [dialog-component-testing.md](./dialog-component-testing.md) for more details.
 
 ---
 
 ## 📊 Current Status
 
-**Test Results**: 289 passing / 289 total (100% pass rate) ✅
-- **Server Actions**: All passing ✅
-- **Components**: All passing ✅
+**Test Results**: 276 passing / 303 total (91% pass rate) ⚠️
+- **Server Actions**: Failing ❌
+- **Components**: Mostly passing ✅ (dialog.test.tsx failing)
 - **Pages**: All passing ✅
 - **API Routes**: All passing ✅
 - **Layout Components**: All passing ✅
 - **App Layouts**: All passing ✅
 - **Dynamic Pages**: All passing ✅
-- **UI Primitives**: All passing ✅
+- **UI Primitives**: Partially tested, `dialog.test.tsx` is failing.
 
-**Coverage**: 58.59% overall (+0.97% from maintenance session, +22.02% total from baseline)
-- Settings: 100% ✅
-- Dashboard layout: 100% ✅ (NEW)
-- Layout components: 89.47% ✅
-- Dashboard components: 88.09% ✅
-- App layout: 87.5% ✅ (NEW - was 0%)
-- Document components: 83.84% ✅
-- Rent components: 77.77% ✅
-- Maintenance components: 75.3% ✅
-- Tenants components: 73.83% ✅
-- Communications components: 71.81% ✅
-- Server actions: 99.10%
-- Loading routes (`app/(dashboard)/*/loading.tsx`): 100% (documents, rent, maintenance, communications, tenants)
-- Documents [id] page: ~90% ✅ (NEW - was 0%)
-- Download API route: ~75% ✅ (NEW - was 0%)
-- UI primitives (`components/ui/**`): ~15%
-- AI API routes: 100% ✅
+**Coverage**: 54.83% overall
+
+### ⚠️ Failing Tests
+
+The following test suites are currently failing:
+
+*   `components/ui/__tests__/dialog.test.tsx`
+*   `app/actions/__tests__/documents.test.ts`
+*   `app/actions/__tests__/rent.test.ts`
+
+The server action tests (`documents.test.ts`, `rent.test.ts`, and others) are failing due to a recent change in the application code that introduced user authentication checks. The test mocks have not been updated to handle this change. See the "Existing Problems" section in the relevant documentation for more details.
 
 ### ✅ Completed
 - [x] Jest & RTL setup
-- [x] Server action tests (tenants, rent, maintenance, documents, communications, dashboard)
+- [x] Server action tests (tenants, rent, maintenance, documents, communications, dashboard) - **Note: These are currently failing due to authentication changes.**
 - [x] Component tests (tenant/rent/dashboard/maintenance suites)
 - [x] Test documentation
 - [x] Co-located test structure
@@ -71,9 +65,12 @@
 - [x] Tenants server action edge cases (validation + Supabase failures) - Tenants session
 - [x] Communications server action edge cases (validation + Supabase failures) - Communications session
 - [x] All 289 tests passing (100% pass rate) - Communications session
+- [x] Added tests for `Card` component.
+- [x] Added tests for `Dialog` component.
 
 ### 🚧 In Progress
-- [ ] Increase coverage to 60%+ (currently 57.62%, need +2.38%)
+- [ ] Fix failing `dialog.test.tsx` test.
+- [ ] Increase coverage to 60%+
 
 ### ❌ Not Started
 - [ ] Integration tests
@@ -96,16 +93,16 @@
 ### For Project Planning
 
 1. **Read**: This document - Full roadmap
-2. **Identify**: Which phase you're working on
+2. **Identify**: Which phase you\'re working on
 3. **Pick**: Tasks from the [checklist](#appendix-test-checklist)
 4. **Track**: Progress by checking off completed items
 
 ### For Debugging Test Failures
 
 1. **Check**: Error message and stack trace
-2. **Review**: [Testing Implementation](./testing-implementation.md) - "Known Issues"
-3. **Try**: Solutions from "What Was Tried" section
-4. **Reference**: [Testing Best Practices](./testing-best-practices.md) - "Debugging Failed Tests"
+2. **Review**: [Testing Implementation](./testing-implementation.md) - \"Known Issues\"
+3. **Try**: Solutions from \"What Was Tried\" section
+4. **Reference**: [Testing Best Practices](./testing-best-practices.md) - \"Debugging Failed Tests\"
 
 ### If You Have Limited Time
 
@@ -159,6 +156,7 @@ After running `npm run test:coverage`:
 - **[Test Expansion – Documents Workflow](./test-expansion-documents-workflow.md)** - Documents UI + AI reminder coverage (2025-11)
 - **[Test Fixes and Payment Status](./test-fixes-and-payment-status.md)** - Historical test stabilization
 - **[Test Memory Optimization](./test-memory-optimization.md)** - Memory configuration notes
+- **[Dialog Component Testing](./dialog-component-testing.md)** - Documentation for the `Dialog` component tests.
 
 ### Configuration Files
 - `jest.config.js` - Main Jest configuration
@@ -190,7 +188,7 @@ After running `npm run test:coverage`:
 
 ## Current State Details
 
-### ✅ What's Working
+### ✅ What\'s Working
 - **Rent server actions** maintain 100% coverage with exhaustive edge-case validation.
 - **Documents server actions** stay at 98.9% statements, including storage cleanup paths.
 - **Tenants and communications server actions** now both sit at 100% lines with full validation/error coverage.
@@ -198,8 +196,8 @@ After running `npm run test:coverage`:
 - **Dashboard, maintenance, tenants, and settings components** remain above 70% coverage.
 - **AI API routes** keep 100% statement coverage across success/error flows.
 
-### ❌ What's Missing
-- **Overall coverage target (60%)** still needs +2.38%; maintenance actions need the new per-test pattern.
+### ❌ What\'s Missing
+- **Overall coverage target (60%)** still needs to be reached.
 - **UI primitives (`components/ui/**`)** remain lightly covered (~15%); interaction tests would raise confidence.
 - **Maintenance server actions** still use legacy mocks and miss failure branches.
 - **Integration/E2E layers** remain unstarted, so Supabase + file storage flows are unverified end to end.
@@ -310,7 +308,7 @@ Achieve **60-70% overall coverage** with focus on:
 - ✅ `app/api/ai/generate-reminder/route.ts`
 - ✅ `app/api/ai/suggest-vendor/route.ts`
 
-**For Each Route, Test**:
+**For Each Route, Test**:\
 1. Successful request with valid payload
 2. Error handling for missing required fields
 3. OpenAI API failure scenarios
@@ -321,19 +319,19 @@ Achieve **60-70% overall coverage** with focus on:
 **Test Structure**:
 ```typescript
 // app/api/ai/__tests__/categorize-maintenance.test.ts
-describe('POST /api/ai/categorize-maintenance', () => {
-  it('should categorize maintenance request successfully', async () => {
+describe(\'POST /api/ai/categorize-maintenance\', () => {
+  it(\'should categorize maintenance request successfully\', async () => {
     // Mock OpenAI API
     // Send request with description
     // Verify response format and category
   })
 
-  it('should return error when description is missing', async () => {
+  it(\'should return error when description is missing\', async () => {
     // Send request without description
     // Verify error response
   })
 
-  it('should handle OpenAI API failures gracefully', async () => {
+  it(\'should handle OpenAI API failures gracefully\', async () => {
     // Mock OpenAI API to fail
     // Verify fallback behavior
   })
@@ -396,14 +394,14 @@ describe('POST /api/ai/categorize-maintenance', () => {
 **Test Structure**:
 ```typescript
 // app/tenants/__tests__/page.test.tsx
-import { render, screen } from '@testing-library/react'
-import TenantsPage from '../page'
-import { getTenants } from '@/app/actions/tenants'
+import { render, screen } from \'@testing-library/react\'
+import TenantsPage from \'../page\'
+import { getTenants } from \'@/app/actions/tenants\'
 
-jest.mock('@/app/actions/tenants')
+jest.mock(\'@/app/actions/tenants\')
 
-describe('Tenants Page', () => {
-  it('should render tenants list', async () => {
+describe(\'Tenants Page\', () => {
+  it(\'should render tenants list\', async () => {
     (getTenants as jest.Mock).mockResolvedValue({
       data: [mockTenant1, mockTenant2],
       error: null,
@@ -411,14 +409,14 @@ describe('Tenants Page', () => {
 
     render(await TenantsPage())
 
-    expect(screen.getByText('Tenants')).toBeInTheDocument()
-    expect(screen.getByText('John Doe')).toBeInTheDocument()
+    expect(screen.getByText(\'Tenants\')).toBeInTheDocument()
+    expect(screen.getByText(\'John Doe\')).toBeInTheDocument()
   })
 
-  it('should display error message when fetch fails', async () => {
+  it(\'should display error message when fetch fails\', async () => {
     (getTenants as jest.Mock).mockResolvedValue({
       data: null,
-      error: 'Database connection failed',
+      error: \'Database connection failed\',
     })
 
     render(await TenantsPage())
@@ -543,10 +541,10 @@ tests/
 ```javascript
 // jest.integration.config.js
 module.exports = {
-  ...require('./jest.config'),
-  testMatch: ['**/tests/integration/**/*.test.ts'],
-  setupFilesAfterEnv: ['<rootDir>/tests/integration/setup.ts'],
-  globalTeardown: '<rootDir>/tests/integration/teardown.ts',
+  ...require(\'./jest.config\'),
+  testMatch: [\'**/tests/integration/**/*.test.ts\'],
+  setupFilesAfterEnv: [\'<rootDir>/tests/integration/setup.ts\'],
+  globalTeardown: \'<rootDir>/tests/integration/teardown.ts\',
 }
 ```
 
@@ -664,7 +662,7 @@ module.exports = {
 
 **Steps**:
 1. View rent tracking page
-2. Filter by "due" status
+2. Filter by \"due\" status
 3. Mark payments as paid
 4. Verify status updates
 5. Check dashboard reflects changes
@@ -742,11 +740,11 @@ module.exports = {
 
 **Example**:
 ```typescript
-import { axe, toHaveNoViolations } from 'jest-axe'
+import { axe, toHaveNoViolations } from \'jest-axe\'
 
 expect.extend(toHaveNoViolations)
 
-it('should have no accessibility violations', async () => {
+it(\'should have no accessibility violations\', async () => {
   const { container } = render(<TenantForm {...props} />)
   const results = await axe(container)
   expect(results).toHaveNoViolations()
@@ -792,7 +790,7 @@ it('should have no accessibility violations', async () => {
 
 **Before Merging to Main**:
 - ✅ All tests pass
-- ✅ Coverage doesn't decrease
+- ✅ Coverage doesn\'t decrease
 - ✅ No accessibility violations
 - ✅ E2E tests pass for modified features
 
@@ -831,7 +829,7 @@ it('should have no accessibility violations', async () => {
 
 ## Quick Wins (If Time-Constrained)
 
-If you can't complete the full roadmap, prioritize these high-impact tests:
+If you can\'t complete the full roadmap, prioritize these high-impact tests:
 
 1. **Fix component coverage** (Phase 1.1) - 2 hours
 2. **Test AI API routes** (Phase 2.1) - 1 day
@@ -872,7 +870,7 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
 - **Example tests**: `app/actions/__tests__/tenants.test.ts` (well-structured reference)
 - **Test helpers**: (to be created in Phase 1)
 - **Mock patterns**: See any `__tests__` file for mocking examples
-- **Documentation**:
+- **Documentation**:\
   - `docs/testing-implementation.md` - Current test infrastructure
   - `docs/testing-best-practices.md` - Testing guidelines and patterns
   - `jest.config.js` - Jest configuration
@@ -893,7 +891,7 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
 ### Common Issues
 
 **Issue**: `TextEncoder is not defined`
-**Solution**: Already fixed in `jest.setup.ts`, ensure you're running latest config
+**Solution**: Already fixed in `jest.setup.ts`, ensure you\'re running latest config
 
 **Issue**: `Request is not defined` in component tests
 **Solution**: See [Testing Implementation](./testing-implementation.md) - Known Issues section
@@ -908,7 +906,7 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
 **Solution**: Check mock is defined before imports, use `jest.clearAllMocks()` in `beforeEach`
 
 **Issue**: Async test timing out
-**Solution**: Ensure you're using `async/await`, increase timeout if needed, check for unresolved promises
+**Solution**: Ensure you\'re using `async/await`, increase timeout if needed, check for unresolved promises
 
 ### Where to Ask Questions
 
@@ -924,8 +922,8 @@ If you can't complete the full roadmap, prioritize these high-impact tests:
 3. **Debug systematically**:
    - Read the full error message
    - Check stack trace for file and line number
-   - Add `console.log` to understand what's happening
-   - Isolate the failing test with `-t "test name"`
+   - Add `console.log` to understand what\'s happening
+   - Isolate the failing test with `-t \"test name\"`
 
 ---
 
@@ -955,6 +953,8 @@ Use this checklist to track progress:
 - [x] Test page: Settings
 - [ ] Test page: Tenant Detail
 - [ ] Test page: Maintenance Detail
+- [x] Test component: Card
+- [x] Test component: Dialog
 - [x] Test component: MaintenanceForm
 - [x] Test component: MaintenancePage
 - [ ] Test component: MaintenanceDetail
@@ -1004,21 +1004,22 @@ Use this checklist to track progress:
 ## 🎯 Summary & Next Steps
 
 ### What You Have Now
-✅ **53 passing tests** covering critical server actions
+✅ **276 passing tests** covering critical server actions
 ✅ **Solid foundation** with Jest, RTL, and co-located test structure
 ✅ **Clear roadmap** to reach 60-70% coverage
 ✅ **Comprehensive documentation** for all testing needs
 
-### What's Next
+### What\'s Next
 
 **Immediate Actions** (This Week):
-1. Start with [Phase 1, Task 1.1](#11-fix-component-coverage-tracking) - Fix component coverage tracking (2-4 hours)
-2. Work through Phase 1 tasks to establish solid foundation (1-2 days total)
-3. Check off completed items in the [Test Checklist](#appendix-test-checklist)
+1. Fix the failing test in `dialog.test.tsx`.
+2. Start with [Phase 1, Task 1.1](#11-fix-component-coverage-tracking) - Fix component coverage tracking (2-4 hours)
+3. Work through Phase 1 tasks to establish solid foundation (1-2 days total)
+4. Check off completed items in the [Test Checklist](#appendix-test-checklist)
 
 **Short Term** (This Month):
 1. Complete [Phase 2](#phase-2-core-application-coverage) - Test all application code (1 week)
-2. Focus on AI API routes first - they're your competitive advantage
+2. Focus on AI API routes first - they\'re your competitive advantage
 3. Track progress and adjust timeline as needed
 
 **Long Term** (Next 2 Months):
@@ -1037,10 +1038,10 @@ Use this checklist to track progress:
 - **Test behavior, not implementation**
 - **Focus on critical paths first**
 - **Keep tests simple and readable**
-- **Don't chase 100% coverage** - focus on value
+- **Don\'t chase 100% coverage** - focus on value
 
 ---
 
-**Last Updated**: 2025-10-31
+**Last Updated**: 2025-11-01
 **Next Review**: After Phase 1 completion
 **Maintained By**: Development Team

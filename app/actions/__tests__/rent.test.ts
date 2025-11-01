@@ -45,6 +45,78 @@ const mockOverduePayment = {
   },
 }
 
+const createSupabaseMock = () => {
+  const selectOrder = jest.fn()
+  const selectSingle = jest.fn()
+  const insertSingle = jest.fn()
+  const updateSingle = jest.fn()
+  const deleteEq = jest.fn()
+
+  const mockUser = {
+    id: 'test-user-id-123',
+    email: 'test@example.com',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '2024-01-01T00:00:00.000Z',
+  }
+
+  const auth = {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    }),
+  }
+
+  const from = jest.fn(() => ({
+    select: jest.fn(() => ({
+      order: selectOrder,
+      eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: selectSingle,
+        })),
+        single: selectSingle,
+        order: selectOrder,
+      })),
+      single: selectSingle,
+    })),
+    insert: jest.fn(() => ({
+      select: jest.fn(() => ({
+        single: insertSingle,
+      })),
+    })),
+    update: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: updateSingle,
+          })),
+        })),
+        select: jest.fn(() => ({
+          single: updateSingle,
+        })),
+      })),
+    })),
+    delete: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        eq: deleteEq,
+      })),
+    })),
+  }))
+
+  return {
+    client: { from, auth },
+    selectOrder,
+    selectSingle,
+    insertSingle,
+    updateSingle,
+    deleteEq,
+    from,
+    auth,
+    mockUser,
+  }
+}
+
 describe('Rent Payment Server Actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -52,17 +124,12 @@ describe('Rent Payment Server Actions', () => {
 
   describe('getRentPayments', () => {
     it('should fetch all rent payments successfully', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            order: jest.fn(() => ({
-              data: mockPayments,
-              error: null,
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.selectOrder.mockResolvedValue({
+        data: mockPayments,
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await getRentPayments()
 
@@ -72,17 +139,12 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should return error when database query fails', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            order: jest.fn(() => ({
-              data: null,
-              error: { message: 'Database error' },
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.selectOrder.mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' },
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await getRentPayments()
 
@@ -101,17 +163,12 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should calculate overdue status for pending payments past due date', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            order: jest.fn(() => ({
-              data: [mockOverduePayment],
-              error: null,
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.selectOrder.mockResolvedValue({
+        data: [mockOverduePayment],
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await getRentPayments()
 
@@ -123,19 +180,12 @@ describe('Rent Payment Server Actions', () => {
 
   describe('getRentPayment', () => {
     it('should fetch a single rent payment by ID', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              single: jest.fn(() => ({
-                data: mockPayments[0],
-                error: null,
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.selectSingle.mockResolvedValue({
+        data: mockPayments[0],
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await getRentPayment('123e4567-e89b-12d3-a456-426614174001')
 
@@ -146,19 +196,12 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should return error when payment not found', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          select: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              single: jest.fn(() => ({
-                data: null,
-                error: { message: 'Payment not found' },
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.selectSingle.mockResolvedValue({
+        data: null,
+        error: { message: 'Payment not found' },
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await getRentPayment('non-existent-id')
 
@@ -178,19 +221,12 @@ describe('Rent Payment Server Actions', () => {
 
   describe('createRentPayment', () => {
     it('should create a rent payment successfully', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          insert: jest.fn(() => ({
-            select: jest.fn(() => ({
-              single: jest.fn(() => ({
-                data: mockPayments[0],
-                error: null,
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.insertSingle.mockResolvedValue({
+        data: mockPayments[0],
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const formData = new FormData()
       formData.append('tenantId', '123e4567-e89b-12d3-a456-426614174000')
@@ -223,19 +259,12 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should return error when database insert fails', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          insert: jest.fn(() => ({
-            select: jest.fn(() => ({
-              single: jest.fn(() => ({
-                data: null,
-                error: { message: 'Insert failed' },
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.insertSingle.mockResolvedValue({
+        data: null,
+        error: { message: 'Insert failed' },
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const formData = new FormData()
       formData.append('tenantId', '123e4567-e89b-12d3-a456-426614174000')
@@ -269,21 +298,12 @@ describe('Rent Payment Server Actions', () => {
 
   describe('updateRentPayment', () => {
     it('should update a rent payment successfully', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          update: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              select: jest.fn(() => ({
-                single: jest.fn(() => ({
-                  data: mockPayments[0],
-                  error: null,
-                })),
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.updateSingle.mockResolvedValue({
+        data: mockPayments[0],
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const formData = new FormData()
       formData.append('tenantId', '123e4567-e89b-12d3-a456-426614174000')
@@ -312,21 +332,12 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should return error when database update fails', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          update: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              select: jest.fn(() => ({
-                single: jest.fn(() => ({
-                  data: null,
-                  error: { message: 'Update failed' },
-                })),
-              })),
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.updateSingle.mockResolvedValue({
+        data: null,
+        error: { message: 'Update failed' },
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const formData = new FormData()
       formData.append('tenantId', '123e4567-e89b-12d3-a456-426614174000')
@@ -360,16 +371,11 @@ describe('Rent Payment Server Actions', () => {
 
   describe('deleteRentPayment', () => {
     it('should delete a rent payment successfully', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          delete: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              error: null,
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.deleteEq.mockResolvedValue({
+        error: null,
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await deleteRentPayment('123e4567-e89b-12d3-a456-426614174001')
 
@@ -378,16 +384,11 @@ describe('Rent Payment Server Actions', () => {
     })
 
     it('should return error when database delete fails', async () => {
-      const mockSupabase = {
-        from: jest.fn(() => ({
-          delete: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              error: { message: 'Delete failed' },
-            })),
-          })),
-        })),
-      };
-      (createClient as jest.Mock).mockResolvedValue(mockSupabase)
+      const supabase = createSupabaseMock()
+      supabase.deleteEq.mockResolvedValue({
+        error: { message: 'Delete failed' },
+      })
+      ;(createClient as jest.Mock).mockResolvedValue(supabase.client)
 
       const result = await deleteRentPayment('123e4567-e89b-12d3-a456-426614174001')
 

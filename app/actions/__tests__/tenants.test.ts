@@ -74,17 +74,37 @@ const buildFormData = (overrides: Record<string, string> = {}) => {
 }
 
 const createSupabaseMock = () => {
-  const order = jest.fn()
+  const selectOrder = jest.fn()
   const selectSingle = jest.fn()
   const insertSingle = jest.fn()
   const updateSingle = jest.fn()
   const deleteEq = jest.fn()
 
+  const mockUser = {
+    id: 'test-user-id-123',
+    email: 'test@example.com',
+    app_metadata: {},
+    user_metadata: {},
+    aud: 'authenticated',
+    created_at: '2024-01-01T00:00:00.000Z',
+  }
+
+  const auth = {
+    getUser: jest.fn().mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    }),
+  }
+
   const from = jest.fn(() => ({
     select: jest.fn(() => ({
-      order,
+      order: selectOrder,
       eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: selectSingle,
+        })),
         single: selectSingle,
+        order: selectOrder,
       })),
       single: selectSingle,
     })),
@@ -95,24 +115,33 @@ const createSupabaseMock = () => {
     })),
     update: jest.fn(() => ({
       eq: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          select: jest.fn(() => ({
+            single: updateSingle,
+          })),
+        })),
         select: jest.fn(() => ({
           single: updateSingle,
         })),
       })),
     })),
     delete: jest.fn(() => ({
-      eq: deleteEq,
+      eq: jest.fn(() => ({
+        eq: deleteEq,
+      })),
     })),
   }))
 
   return {
-    client: { from },
-    from,
-    order,
+    client: { from, auth },
+    selectOrder,
     selectSingle,
     insertSingle,
     updateSingle,
     deleteEq,
+    from,
+    auth,
+    mockUser,
   }
 }
 
@@ -124,7 +153,7 @@ describe('Tenant Server Actions', () => {
   describe('getTenants', () => {
     it('returns mapped tenants on success', async () => {
       const supabase = createSupabaseMock()
-      supabase.order.mockResolvedValue({
+      supabase.selectOrder.mockResolvedValue({
         data: [tenantRow],
         error: null,
       })
@@ -140,7 +169,7 @@ describe('Tenant Server Actions', () => {
 
     it('returns error when Supabase query fails', async () => {
       const supabase = createSupabaseMock()
-      supabase.order.mockResolvedValue({
+      supabase.selectOrder.mockResolvedValue({
         data: null,
         error: { message: 'Database failure' },
       })

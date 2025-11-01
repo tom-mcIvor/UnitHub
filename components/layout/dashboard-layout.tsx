@@ -6,7 +6,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { SignInForm } from "@/components/auth/sign-in-form"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { SignUpForm } from "@/components/auth/sign-up-form"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
@@ -15,11 +16,25 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [authOpen, setAuthOpen] = useState(false)
+  const [showSignUp, setShowSignUp] = useState(false)
 
-  const handleOpenAuth = () => setAuthOpen(true)
+  const handleOpenAuth = () => {
+    setShowSignUp(false)
+    setAuthOpen(true)
+  }
+
   const handleSignedIn = () => {
     setAuthOpen(false)
+    setShowSignUp(false)
     router.refresh()
+  }
+
+  const handleSwitchToSignUp = () => {
+    setShowSignUp(true)
+  }
+
+  const handleSwitchToSignIn = () => {
+    setShowSignUp(false)
   }
 
   return (
@@ -34,7 +49,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="border-none bg-transparent p-0 shadow-none sm:max-w-md">
-          <SignInForm onSignedIn={handleSignedIn} />
+          <DialogTitle className="sr-only">{showSignUp ? 'Sign Up' : 'Sign In'}</DialogTitle>
+          {showSignUp ? (
+            <SignUpForm onSignedUp={handleSignedIn} onSwitchToSignIn={handleSwitchToSignIn} />
+          ) : (
+            <SignInForm onSignedIn={handleSignedIn} onSwitchToSignUp={handleSwitchToSignUp} />
+          )}
         </DialogContent>
       </Dialog>
     </div>
