@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
 import { rentPaymentSchema, type RentPaymentFormData } from "@/lib/schemas"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,8 +23,6 @@ interface RentPaymentFormProps {
 
 export function RentPaymentForm({ onClose, tenants = [], editingPayment, initialData }: RentPaymentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const isEditing = !!editingPayment
 
@@ -38,8 +37,6 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
 
   const onSubmit = async (data: RentPaymentFormData) => {
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(false)
 
     try {
       // Convert to FormData for server action
@@ -58,14 +55,14 @@ export function RentPaymentForm({ onClose, tenants = [], editingPayment, initial
         : await createRentPayment(formData)
 
       if (result.success) {
-        setSuccess(true)
+        toast.success(`Payment ${isEditing ? 'updated' : 'recorded'} successfully`)
         router.refresh()
-        setTimeout(() => {
-          onClose()
-        }, 1000)
+        onClose()
       } else {
-        setError(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
+        toast.error(result.error || `Failed to ${isEditing ? 'update' : 'save'} payment`)
       }
+    } catch (error) {
+      toast.error('An unexpected error occurred')
     } finally {
       setIsSubmitting(false)
     }
