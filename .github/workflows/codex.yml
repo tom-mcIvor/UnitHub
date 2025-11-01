@@ -30,6 +30,7 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          model: gpt-4o-mini
           prompt: |
             Review the recent changes pushed to ${{ github.repository }} on branch ${{ github.ref_name }}.
 
