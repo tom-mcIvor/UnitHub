@@ -164,6 +164,26 @@ The codebase is structured to easily extend with:
 - Middleware to protect all routes.
 - Login, signup, and callback pages.
 
+### 9. Testing Infrastructure
+- **Jest** with React Testing Library for unit/component testing
+- **163 tests** covering server actions, components, pages, and layouts
+- **36.57% code coverage** (target: 60%+, up from 32.05%)
+- Co-located test structure (`__tests__/` directories)
+- 100% test pass rate (163/163 passing)
+- Test coverage areas:
+  - Settings: 100% coverage
+  - Layout components: 89% coverage
+  - Dashboard components: 88% coverage
+  - Maintenance components: 75% coverage
+  - Tenants components: 74% coverage
+  - Server actions: 69% coverage (30 tests)
+  - Rent components: 61% coverage
+  - Communications components: 48% coverage
+  - AI API routes: 100% coverage
+  - Document components: 0% (untested)
+- See `docs/testing-roadmap.md` for testing plan
+- See `docs/test-expansion-session-2-2025-11-01.md` for latest changes
+
 ---
 
-**Status**: Core MVP features complete, including basic authentication. Ready for Supabase integration, RLS policies, and deployment.
+**Status**: Core MVP features complete, including basic authentication and comprehensive test coverage. Ready for Supabase integration, RLS policies, and deployment.

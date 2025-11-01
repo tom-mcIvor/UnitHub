@@ -27,7 +27,11 @@ interface CommunicationsPageProps {
   error: string | null
 }
 
-export function CommunicationsPage({ initialCommunications, tenants, error }: CommunicationsPageProps) {
+export function CommunicationsPage({
+  initialCommunications = [],
+  tenants = [],
+  error = null
+}: CommunicationsPageProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingLog, setEditingLog] = useState<CommunicationLogWithTenant | null>(null)
   const [deletingLog, setDeletingLog] = useState<CommunicationLogWithTenant | null>(null)

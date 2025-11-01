@@ -33,3 +33,5 @@ next-env.d.ts
 coverage/
 
 /.claude
+
+/docs

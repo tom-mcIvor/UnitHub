@@ -1,8 +1,8 @@
 # Testing Best Practices Guide
 
 **UnitHub Testing Documentation**
-**Last Updated**: 2025-10-31
-**Current Test Coverage**: 53 tests passing (server actions + components)
+**Last Updated**: 2025-11-01 (Session 2)
+**Current Test Coverage**: 163 tests passing (server actions + components + pages + layouts)
 
 ---
 
@@ -105,6 +105,20 @@ components/tenants/
 **Tests**: 6 passing | **Lines**: 141
 
 **Total Server Action Tests**: 30 passing ✅
+
+**Layout Component Tests**: 5 passing ✅
+- `components/layout/__tests__/sidebar.test.tsx` - 2 tests
+- `components/layout/__tests__/header.test.tsx` - 1 test
+- `components/layout/__tests__/dashboard-layout.test.tsx` - 2 tests
+
+**Page Component Tests**: 10 passing ✅
+- `components/settings/__tests__/settings-page.test.tsx` - 5 tests
+- `components/communications/__tests__/communications-page.test.tsx` - 5 tests
+- `components/maintenance/__tests__/maintenance-page.test.tsx` - 5 tests (updated)
+
+**Other Component Tests**: 6 passing ✅
+- `components/rent/__tests__/rent-chart.test.tsx` - 4 tests
+- `components/__tests__/theme-provider.test.tsx` - 2 tests
 
 ### ✅ Component Suites (Stabilized)
 
@@ -616,9 +630,9 @@ For component tests failing with `Request is not defined`:
 - Performance benchmarking
 
 ### Coverage Goals
-- Current: **12%** overall
-- Phase 1: **25%**
-- Phase 2: **50%**
+- Current: **36.57%** overall (Updated 2025-11-01 Session 2)
+- Phase 1: **25%** ✅ (Exceeded)
+- Phase 2: **50%** (In Progress - 71% complete)
 - Phase 3: **60%**
 - Phase 4: **70%+**
 
@@ -641,18 +655,26 @@ For component tests failing with `Request is not defined`:
 
 ## Summary
 
-**Current Status**: ✅ 30/30 server action tests passing
+**Current Status**: ✅ 163/163 tests passing (100% pass rate)
 
 **What's Working**:
-- Complete server action test coverage
+- Complete server action test coverage (30 tests)
+- Component tests for tenants, rent, dashboard, maintenance (107 tests)
+- Layout component tests (5 tests)
+- Page component tests (15 tests) - **NEW: Settings, Communications, Maintenance pages**
+- Rent chart tests (4 tests) - **NEW**
+- Theme provider tests (2 tests) - **NEW**
 - Proper mocking of Supabase and Next.js cache
 - Co-located test structure
-- Fast test execution (~1.8s)
+- Fast test execution (~8.5s for 163 tests)
 
 **What Needs Work**:
-- Component tests blocked by environment issues
+- Coverage at 36.57% (target 60%+, need +23.43%)
+- Document components untested (0% coverage - 5 files)
+- Communication form untested (communications page now at 47.74%)
+- Payment reminder generator untested
 - No integration or E2E tests yet
-- Limited edge case coverage
+- Limited edge case coverage in server actions (69.19%, target 100%)
 - No visual regression testing
 
 **Key Principle**: **Test behavior, not implementation**

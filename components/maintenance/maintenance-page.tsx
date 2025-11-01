@@ -28,7 +28,11 @@ interface MaintenancePageProps {
   error: string | null
 }
 
-export function MaintenancePage({ initialRequests, tenants, error }: MaintenancePageProps) {
+export function MaintenancePage({
+  initialRequests = [],
+  tenants = [],
+  error = null
+}: MaintenancePageProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingRequest, setEditingRequest] = useState<MaintenanceRequestWithTenant | null>(null)
   const [deletingRequest, setDeletingRequest] = useState<MaintenanceRequestWithTenant | null>(null)

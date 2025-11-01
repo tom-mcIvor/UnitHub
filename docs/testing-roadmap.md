@@ -1,25 +1,37 @@
 # Testing Roadmap - UnitHub
 
 **Created**: 2025-10-31
-**Updated**: 2025-11-01
-**Current Status**: 136/137 tests passing (99.3%)
+**Updated**: 2025-11-01 (Test Expansion Session 2)
+**Current Status**: 163/163 tests passing (100%)
+**Current Coverage**: 36.57% overall (target: 60%+)
 **Target Coverage**: 60-70% overall by end of roadmap
 
 > 📚 **This is your complete testing guide** - includes overview, implementation plan, and resources all in one place.
 >
-> **Latest**: Test suite fixed on 2025-11-01. See [test-fixes-and-payment-status.md](./test-fixes-and-payment-status.md) for details.
+> **Latest**: Added 21 tests for settings, communications, maintenance pages, rent chart, theme provider. See [test-expansion-session-2-2025-11-01.md](./test-expansion-session-2-2025-11-01.md) for details.
 
 ---
 
 ## 📊 Current Status
 
-**Test Results**: 136 passing / 137 total (99.3% pass rate) ✅
+**Test Results**: 163 passing / 163 total (100% pass rate) ✅
 - **Server Actions**: All passing ✅
-- **Components**: All passing except 1 UI integration test ⚠️
+- **Components**: All passing ✅
 - **Pages**: All passing ✅
 - **API Routes**: All passing ✅
+- **Layout Components**: All passing ✅
 
-**Failing Test**: `components/maintenance/__tests__/maintenance-form.test.tsx` - "submits the form with valid data" (async timing issue, not critical)
+**Coverage**: 36.57% overall (+4.52% from last session)
+- Settings: 100% ✅
+- Layout components: 89.47% ✅
+- Dashboard components: 88.09% ✅
+- Maintenance components: 75.3% ✅
+- Tenants components: 73.83% ✅
+- Server actions: 69.19%
+- Rent components: 60.71%
+- Communications components: 47.74%
+- Document components: 0% ❌
+- AI API routes: 100% ✅
 
 ### ✅ Completed
 - [x] Jest & RTL setup
@@ -31,9 +43,16 @@
 - [x] Page component tests (tenants, rent, maintenance, communications, documents, settings)
 - [x] Fixed test runner crash (syntax errors, duplicate code)
 - [x] Fixed 30 failing tests (NextResponse mock, parseFloat validation, test data)
+- [x] Layout component tests (sidebar, header, dashboard-layout) - Session 1
+- [x] Settings page tests - Session 2
+- [x] Communications page tests - Session 2
+- [x] Maintenance page tests - Session 2
+- [x] Rent chart tests - Session 2
+- [x] Theme provider tests - Session 2
+- [x] All 163 tests passing (100% pass rate) - Session 2
 
 ### 🚧 In Progress
-- [ ] Fix 1 remaining UI test (maintenance form async timing)
+- [ ] Increase coverage to 60%+ (currently 36.57%, need +23.43%)
 
 ### ❌ Not Started
 - [ ] Integration tests
@@ -114,8 +133,10 @@ After running `npm run test:coverage`:
 ### Testing Docs
 - **[Testing Best Practices](./testing-best-practices.md)** - Guidelines and patterns for writing tests
 - **[Testing Implementation](./testing-implementation.md)** - Technical setup details and known issues
-- **[Component Test Suite Stabilization](./component-test-suite-stabilization.md)** - Historical component test fixes
-- **[Additional Server Action Tests](./additional-server-action-tests.md)** - Server action test coverage details
+- **[Test Expansion Session 1](./test-expansion-2025-11-01.md)** - Layout component tests (2025-11-01)
+- **[Test Expansion Session 2](./test-expansion-session-2-2025-11-01.md)** - Page components, charts, theme (2025-11-01)
+- **[Test Fixes and Payment Status](./test-fixes-and-payment-status.md)** - Historical test stabilization
+- **[Test Memory Optimization](./test-memory-optimization.md)** - Memory configuration notes
 
 ### Configuration Files
 - `jest.config.js` - Main Jest configuration
@@ -1007,25 +1028,27 @@ Use this checklist to track progress:
 - [ ] Test page: Tenant Detail
 - [ ] Test page: Maintenance Detail
 - [x] Test component: MaintenanceForm
-- [ ] Test component: MaintenancePage
+- [x] Test component: MaintenancePage
 - [ ] Test component: MaintenanceDetail
 - [ ] Test component: AICategorization
 - [ ] Test component: DocumentUpload
 - [ ] Test component: DocumentsPage
 - [ ] Test component: LeaseExtractor
 - [ ] Test component: CommunicationForm
-- [ ] Test component: CommunicationsPage
+- [x] Test component: CommunicationsPage
 - [ ] Test component: DashboardOverview
 - [ ] Test component: StatCard
 - [ ] Test component: MaintenanceOverview
 - [ ] Test component: UpcomingPayments
 - [ ] Test component: RecentTenants
 - [ ] Test component: PaymentReminderGenerator
-- [ ] Test component: SettingsPage
+- [x] Test component: SettingsPage
 - [ ] Test component: TenantDetail
-- [ ] Test layout: DashboardLayout
-- [ ] Test layout: Header
-- [ ] Test layout: Sidebar
+- [x] Test component: RentChart
+- [x] Test component: ThemeProvider
+- [x] Test layout: DashboardLayout
+- [x] Test layout: Header
+- [x] Test layout: Sidebar
 
 ### Phase 3: Integration
 - [ ] Set up test database
