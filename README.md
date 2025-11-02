@@ -81,12 +81,6 @@ UnitHub addresses the needs of property managers. The application streamlines da
 
 While I had prior experience with Next.js, this project significantly expanded my technical capabilities through several key areas:
 
-**Supabase Mastery**
-- Implemented PostgreSQL database schema with proper relationships and indexes
-- Configured Row Level Security policies for secure multi-tenant architecture
-- Integrated Supabase Auth with both traditional and OAuth flows
-- Utilized Supabase Storage for file management
-
 **Advanced Next.js Patterns**
 - Leveraged Server Components and Server Actions for optimal performance
 - Implemented proper client/server component boundaries
@@ -94,23 +88,9 @@ While I had prior experience with Next.js, this project significantly expanded m
 - Utilized Next.js caching and revalidation strategies
 
 **AI-Assisted Development Workflow**
-- Employed Claude Code for systematic feature development and code generation
-- Used Gemini for alternative perspectives on complex problems
 - Integrated Codex as a GitHub Action for automated code reviews on every commit
 - Maintained comprehensive documentation throughout the development process
 - Followed test-driven development practices with AI assistance
-- Implemented proper git workflows and commit hygiene with AI-guided best practices
-
-**Multi-Tenancy Architecture**
-- Designed and implemented secure data isolation patterns
-- Configured RLS policies to ensure users can only access their own data
-- Tested multi-tenant scenarios thoroughly
-
-**Testing Discipline**
-- Wrote comprehensive test suites covering server actions, components, and API routes
-- Achieved 100% test pass rate through iterative refinement
-- Implemented mocking strategies for external services (Supabase, OpenAI)
-- Set up continuous integration with GitHub Actions
 
 **Full-Stack Integration**
 - Connected frontend forms to backend server actions with type safety
@@ -129,18 +109,6 @@ While I had prior experience with Next.js, this project significantly expanded m
 - TypeScript strict mode enabled
 - Zod schemas for runtime validation
 - Type inference from database to frontend
-
-**Security Best Practices**
-- Row Level Security at the database level
-- Environment variable management
-- Input validation on client and server
-- Authentication checks in all server actions
-
-**Testing Strategy**
-- Unit tests for server actions
-- Component tests with React Testing Library
-- Integration tests for full workflows
-- Mocked external dependencies for reliable tests
 
 **Automated Code Quality**
 - GitHub Actions workflow for continuous integration
